@@ -1,6 +1,7 @@
 import { resolve } from 'path'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-04-03',
   devtools: { enabled: true },
@@ -16,12 +17,12 @@ export default defineNuxtConfig({
     },
   ],
   auth: {
-    baseURL: 'http://localhost:3000/api/auth',
+    baseURL: process.env.AUTH_ORIGIN,
     provider: {
       type: 'authjs'
     }
   },
-  css: ['./app/assets/css/main.css'],
+  css: ['./assets/css/main.css'],
   postcss: {
     plugins: {
       tailwindcss: {},
@@ -29,7 +30,7 @@ export default defineNuxtConfig({
     },
   },
   alias: {
-    'next-auth/core': resolve(process.cwd(), 'node_modules/next-auth/core'),
-    '@': resolve(process.cwd(), './')
+    '@': resolve(process.cwd(), './'),
+    'next-auth/core': resolve(process.cwd(), 'node_modules/next-auth/core/index.js')
   }
 })
