@@ -3,7 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql" // Using postgres as default, can be sqlite for dev if requested, but plan implies postgres
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {

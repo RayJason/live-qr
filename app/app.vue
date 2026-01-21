@@ -1,6 +1,10 @@
 <template>
-  <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
-  </div>
+  <NuxtLayout>
+    <NuxtPage />
+  </NuxtLayout>
+  <Toaster />
 </template>
+
+<script setup lang="ts">
+import { Toaster } from "vue-sonner";
+</script>
