@@ -5,6 +5,15 @@ import { QrCode, Shield, Zap, ArrowRight, Github } from 'lucide-vue-next'
 
 const { status, signIn } = useAuth()
 
+useSeoMeta({
+  title: 'Never Lose Your Gear',
+  description: 'Smart, trackable QR codes for your most valuable items. Protect what matters with instant Safe and Lost modes.',
+  ogTitle: 'Anti-Lost - Never Lose Your Gear',
+  ogDescription: 'Smart, trackable QR codes for your most valuable items. Protect what matters with instant Safe and Lost modes.',
+  ogImage: '/og-image.png', // Assuming we might add one later or it defaults to something global if set in future
+  twitterCard: 'summary_large_image',
+})
+
 const handleGetStarted = () => {
     if (status.value === 'authenticated') {
         navigateTo('/dashboard')

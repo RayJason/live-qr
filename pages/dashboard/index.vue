@@ -11,6 +11,11 @@ definePageMeta({
 })
 
 const { data: session } = useAuth()
+
+useSeoMeta({
+  title: 'Dashboard',
+})
+
 const { data: products, pending, refresh, error } = await useFetch('/api/products')
 
 const handleProductCreated = () => {

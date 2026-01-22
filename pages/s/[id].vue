@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { toast } from 'vue-sonner'
-import { AlertTriangle, MapPin, CheckCircle, ShieldCheck } from 'lucide-vue-next'
+import { AlertTriangle, MapPin, CheckCircle, ShieldCheck, Phone, Mail } from 'lucide-vue-next'
 
 definePageMeta({
   auth: false
@@ -26,6 +26,19 @@ const route = useRoute()
 const productId = route.params.id as string
 
 const { data: product, pending, error } = await useFetch(`/api/s/${productId}`)
+
+useSeoMeta({
+  title: () => product.value?.name ? (product.value?.status === 'LOST' ? `LOST ITEM: ${product.value.name}` : `Safe Item - ${product.value.name}`) : 'Anti-Lost Item',
+  description: () => product.value?.status === 'LOST' 
+    ? `HELP! This item is LOST. Please help return it to the owner. ${product.value?.lostMessage || ''}`
+    : `This item is protected by Anti-Lost. If found, please scan to contact owner.`,
+  ogTitle: () => product.value?.name ? (product.value?.status === 'LOST' ? `LOST ITEM: ${product.value.name}` : `Safe Item - ${product.value.name}`) : 'Anti-Lost Item',
+  ogDescription: () => product.value?.status === 'LOST' 
+    ? `HELP! This item is LOST. Please help return it to the owner. ${product.value?.lostMessage || ''}`
+    : `This item is protected by Anti-Lost. If found, please scan to contact owner.`,
+  ogImage: '/og-image.png',
+  twitterCard: 'summary_large_image',
+})
 
 const showReportForm = ref(false)
 const isSubmitting = ref(false)
@@ -101,13 +114,37 @@ const onSubmit = form.handleSubmit(async (values) => {
                 </CardDescription>
                 
                 <div v-if="isLost && product" class="mt-4 p-4 bg-muted rounded-lg text-left">
-                     <p v-if="product.lostMessage" class="font-medium text-lg text-foreground mb-2">
+                     <p v-if="product.lostMessage" class="font-medium text-lg text-foreground mb-4 italic">
                         "{{ product.lostMessage }}"
                      </p>
                      
-                     <div v-if="product.contactInfo" class="mt-4">
-                        <div class="text-xs text-muted-foreground uppercase font-bold tracking-wider">Contact Owner</div>
-                        <div class="text-xl font-bold text-primary">{{ product.contactInfo }}</div>
+                     <div v-if="product.contactInfo" class="space-y-3">
+                        <div class="text-xs text-muted-foreground uppercase font-bold tracking-wider mb-2">Contact Owner</div>
+                        
+                        <!-- Check if it's a phone number -->
+                        <a 
+                            v-if="product.contactInfo.match(/^[\d\s\-+()]+$/)"
+                            :href="`tel:${product.contactInfo.replace(/\s/g, '')}`"
+                            class="flex items-center gap-3 p-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            <Phone class="h-5 w-5" />
+                            <span class="text-lg font-bold">{{ product.contactInfo }}</span>
+                        </a>
+                        
+                        <!-- Check if it's an email -->
+                        <a 
+                            v-else-if="product.contactInfo.includes('@')"
+                            :href="`mailto:${product.contactInfo}`"
+                            class="flex items-center gap-3 p-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                        >
+                            <Mail class="h-5 w-5" />
+                            <span class="text-lg font-bold">{{ product.contactInfo }}</span>
+                        </a>
+                        
+                        <!-- Other contact info -->
+                        <div v-else class="text-xl font-bold text-primary">
+                            {{ product.contactInfo }}
+                        </div>
                      </div>
                 </div>
             </CardHeader>
