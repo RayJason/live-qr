@@ -77,20 +77,18 @@ const form = useForm({
 
 // Populate form when data loads
 watch(
-  () => product.value,
+  product,
   (newProduct) => {
     if (newProduct) {
-      form.resetForm({
-        values: {
-          name: newProduct.name,
-          description: newProduct.description || "",
-          contactEmail: newProduct.contactEmail || "",
-          contactPhone: newProduct.contactPhone || "",
-          lostMessage: newProduct.lostMessage || "",
-          feishuWebhookUrl: newProduct.feishuWebhookUrl || "",
-          status: newProduct.status === "LOST",
-          showContactWhenSafe: newProduct.showContactWhenSafe || false,
-        },
+      form.setValues({
+        name: newProduct.name,
+        description: newProduct.description ?? "",
+        contactEmail: newProduct.contactEmail ?? "",
+        contactPhone: newProduct.contactPhone ?? "",
+        lostMessage: newProduct.lostMessage ?? "",
+        feishuWebhookUrl: newProduct.feishuWebhookUrl ?? "",
+        status: newProduct.status === "LOST",
+        showContactWhenSafe: newProduct.showContactWhenSafe ?? false,
       });
     }
   },
@@ -123,11 +121,14 @@ const onSubmit = form.handleSubmit(async (values) => {
       body: payload,
     });
 
-    // Invalidate public page cache
-    await refreshNuxtData(`public-product-${productId}`);
+    // Invalidate public page cache (ignore errors)
+    try {
+      await refreshNuxtData(`public-product-${productId}`);
+    } catch {
+      // Cache invalidation is not critical
+    }
 
     toast.success("Product updated successfully");
-    // refresh() not strictly needed if optimistic update works, but good for sync
   } catch (e) {
     toast.error("Failed to update product");
     refresh(); // Revert on error
@@ -234,8 +235,11 @@ const publicUrl = computed(() => {
                   <Label class="text-base font-medium leading-none"
                     >Lost Mode</Label
                   >
-                  <FormField v-slot="{ value, handleChange }" name="status">
-                    <Switch :checked="value" @update:checked="handleChange" />
+                  <FormField v-slot="{ componentField }" name="status">
+                    <Switch
+                      :model-value="!!componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    />
                   </FormField>
                 </div>
                 <p class="text-sm text-muted-foreground">
@@ -292,10 +296,13 @@ const publicUrl = computed(() => {
                     >Safe Mode Contact</Label
                   >
                   <FormField
-                    v-slot="{ value, handleChange }"
+                    v-slot="{ componentField }"
                     name="showContactWhenSafe"
                   >
-                    <Switch :checked="value" @update:checked="handleChange" />
+                    <Switch
+                      :model-value="!!componentField.modelValue"
+                      @update:model-value="componentField['onUpdate:modelValue']"
+                    />
                   </FormField>
                 </div>
                 <p class="text-sm text-muted-foreground">
