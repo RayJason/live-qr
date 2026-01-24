@@ -1,7 +1,5 @@
 import { getServerSession } from '#auth'
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
     const session = await getServerSession(event)
@@ -18,6 +16,7 @@ export default defineEventHandler(async (event) => {
             email: true,
             phone: true,
             image: true,
+            feishuWebhookUrl: true,
         }
     })
     

@@ -16,7 +16,7 @@ useSeoMeta({
   title: 'Dashboard',
 })
 
-const { data: products, pending, refresh, error } = await useFetch('/api/products')
+const { data: products, pending, refresh, error } = useFetch('/api/products')
 
 const handleProductCreated = () => {
     refresh()

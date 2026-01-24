@@ -38,11 +38,12 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const pending = ref(false)
-const profile = ref<{ id: string; name: string; email: string; phone: string | null; image: string | null } | null>(null)
+const profile = ref<{ id: string; name: string; email: string; phone: string | null; image: string | null; feishuWebhookUrl: string | null } | null>(null)
 
 const formSchema = toTypedSchema(z.object({
   name: z.string().min(1, 'Please enter your name').max(50),
   phone: z.string().max(20).optional(),
+  feishuWebhookUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
 }))
 
 const form = useForm({
@@ -74,6 +75,7 @@ watchEffect(() => {
         form.setValues({
             name: profile.value.name || '',
             phone: profile.value.phone || '',
+            feishuWebhookUrl: profile.value.feishuWebhookUrl || '',
         })
     }
 })
@@ -134,6 +136,9 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <Input class="pl-10" placeholder="Your name" v-bind="componentField" />
               </div>
             </FormControl>
+            <FormDescription>
+              This name will be displayed on your item's public page to help finders identify the owner.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         </FormField>
@@ -154,16 +159,35 @@ const onSubmit = form.handleSubmit(async (values) => {
           </FormItem>
         </FormField>
 
+        <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
+          <FormItem>
+            <FormLabel>Feishu Webhook URL</FormLabel>
+            <FormControl>
+              <div class="relative">
+                <div class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center">
+                    <!-- Simple icon placeholder or use Link icon -->
+                    <span class="text-xs font-bold text-muted-foreground">F</span>
+                </div>
+                <Input class="pl-10" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..." v-bind="componentField" />
+              </div>
+            </FormControl>
+            <FormDescription>
+              Receive notifications when your items are scanned or reported.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        </FormField>
+
         <div class="p-3 border rounded-lg bg-muted/50">
           <div class="flex items-center gap-3">
             <Mail class="h-4 w-4 text-muted-foreground" />
-            <div>
+            <div class="flex-1">
               <div class="text-sm font-medium">Email</div>
               <div class="text-sm text-muted-foreground">{{ profile?.email }}</div>
             </div>
           </div>
           <p class="mt-2 text-xs text-muted-foreground">
-            Email is from your Google account and cannot be changed
+             Managed via Google Sign-In
           </p>
         </div>
 

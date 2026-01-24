@@ -1,12 +1,11 @@
 import { getServerSession } from '#auth'
-import { PrismaClient } from '@prisma/client'
+import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const updateSchema = z.object({
     name: z.string().min(1).max(50).optional(),
     phone: z.string().max(20).optional(),
+    feishuWebhookUrl: z.string().optional().nullable(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -28,6 +27,7 @@ export default defineEventHandler(async (event) => {
             email: true,
             phone: true,
             image: true,
+            feishuWebhookUrl: true,
         }
     })
     

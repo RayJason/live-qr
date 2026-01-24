@@ -1,8 +1,6 @@
 import { getServerSession } from '#auth'
-import { PrismaClient } from '@prisma/client'
+import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const createProductSchema = z.object({
   name: z.string().min(1, 'Name is required').max(50),

@@ -1,6 +1,4 @@
-import { PrismaClient } from '@prisma/client'
-
-const prisma = new PrismaClient()
+import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
     const id = getRouterParam(event, 'id')
@@ -14,8 +12,10 @@ export default defineEventHandler(async (event) => {
             name: true,
             status: true,
             description: true,
-            contactInfo: true, // Only show if LOST theoretically? Or always?
+            contactEmail: true,
+            contactPhone: true,
             lostMessage: true,
+            showContactWhenSafe: true,
             user: {
                 select: {
                     name: true // "This item belongs to Ray"

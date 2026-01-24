@@ -1,7 +1,5 @@
-import { PrismaClient } from '@prisma/client'
+import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const reportSchema = z.object({
   productId: z.string(),
@@ -40,7 +38,7 @@ export default defineEventHandler(async (event) => {
     
     // Send Notification (Feishu)
     // Use product-specific webhook if set, otherwise use env default (system admin channel)
-    const webhookUrl = product.feishuWebhookUrl || process.env.FEISHU_WEBHOOK_URL
+    const webhookUrl = product.feishuWebhookUrl
     
     if (webhookUrl) {
         try {

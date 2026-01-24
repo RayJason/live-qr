@@ -1,0 +1,1 @@
+import { PrismaClient } from '@prisma/client'; const prisma = new PrismaClient(); async function main() { const p = await prisma.product.findUnique({ where: { id: 'cmkocybfi0001kokzjon7swv0' } }); console.log(JSON.stringify(p, null, 2)); } main();

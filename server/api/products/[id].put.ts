@@ -1,16 +1,16 @@
 import { getServerSession } from '#auth'
-import { PrismaClient } from '@prisma/client'
+import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
-
-const prisma = new PrismaClient()
 
 const updateProductSchema = z.object({
   name: z.string().min(1).optional(),
   description: z.string().optional(),
-  contactInfo: z.string().optional().nullable(),
+  contactEmail: z.string().optional().nullable(),
+  contactPhone: z.string().optional().nullable(),
   lostMessage: z.string().optional().nullable(),
   feishuWebhookUrl: z.string().optional().nullable(),
-  status: z.enum(['NORMAL', 'LOST']).optional()
+  status: z.enum(['NORMAL', 'LOST']).optional(),
+  showContactWhenSafe: z.boolean().optional(),
 })
 
 export default defineEventHandler(async (event) => {
