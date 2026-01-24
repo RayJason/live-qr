@@ -27,6 +27,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { toast } from "vue-sonner";
 import { Loader2, ArrowLeft, Printer, Trash2 } from "lucide-vue-next";
+import { Skeleton } from "@/components/ui/skeleton";
 import QrcodeVue from "qrcode.vue";
 import {
   AlertDialog,
@@ -53,7 +54,9 @@ const {
   pending,
   refresh,
   error,
-} = useLazyFetch(`/api/products/${productId}`);
+} = useFetch(`/api/products/${productId}`, {
+  key: `product-${productId}`,
+});
 
 const formSchema = toTypedSchema(
   z.object({
@@ -101,7 +104,7 @@ const onSubmit = form.handleSubmit(async (values) => {
   try {
     const payload = {
       ...values,
-      status: values.status ? "LOST" : "NORMAL",
+      status: (values.status ? "LOST" : "NORMAL") as "LOST" | "NORMAL",
     };
 
     // Optimistic update
@@ -188,8 +191,58 @@ const publicUrl = computed(() => {
       </Button>
     </div>
 
-    <div v-if="pending" class="flex justify-center p-12">
-      <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+    <div v-if="pending" class="grid gap-6 md:grid-cols-2">
+      <div class="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton class="h-8 w-48 mb-2" />
+            <Skeleton class="h-4 w-64" />
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-24" />
+              <Skeleton class="h-10 w-full" />
+            </div>
+            <div class="space-y-2">
+              <Skeleton class="h-4 w-24" />
+              <Skeleton class="h-20 w-full" />
+            </div>
+            <Skeleton class="h-32 w-full rounded-lg" />
+            <Skeleton class="h-32 w-full rounded-lg" />
+            <Skeleton class="h-10 w-full" />
+            <div class="flex justify-end pt-4">
+              <Skeleton class="h-10 w-32" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      <div class="space-y-6">
+        <Card>
+          <CardHeader>
+            <Skeleton class="h-8 w-32 mb-2" />
+            <Skeleton class="h-4 w-48" />
+          </CardHeader>
+          <CardContent class="flex flex-col items-center">
+            <Skeleton class="h-[232px] w-[232px] rounded-lg" />
+            <div class="mt-4 text-center w-full flex flex-col items-center">
+              <Skeleton class="h-4 w-32 mb-1" />
+              <Skeleton class="h-3 w-48" />
+            </div>
+          </CardContent>
+          <CardFooter class="justify-center">
+            <Skeleton class="h-10 w-28" />
+          </CardFooter>
+        </Card>
+        <Card>
+          <CardHeader>
+            <Skeleton class="h-6 w-32" />
+          </CardHeader>
+          <CardContent class="space-y-4">
+            <Skeleton class="h-16 w-full" />
+            <Skeleton class="h-16 w-full" />
+          </CardContent>
+        </Card>
+      </div>
     </div>
 
     <div v-else-if="error">
@@ -390,10 +443,12 @@ const publicUrl = computed(() => {
           </CardHeader>
           <CardContent class="flex flex-col items-center">
             <div class="bg-white p-4 rounded-lg border shadow-sm">
-              <QrcodeVue :value="publicUrl" :size="200" level="H" />
+              <ClientOnly>
+                <QrcodeVue :value="publicUrl" :size="200" level="H" />
+              </ClientOnly>
             </div>
             <div class="mt-4 text-center">
-              <p class="text-sm font-medium">{{ product.name }}</p>
+              <p class="text-sm font-medium">{{ product?.name }}</p>
               <p class="text-xs text-muted-foreground mt-1">{{ publicUrl }}</p>
             </div>
           </CardContent>
@@ -411,7 +466,7 @@ const publicUrl = computed(() => {
           </CardHeader>
           <CardContent>
             <div
-              v-if="product.reports && product.reports.length > 0"
+              v-if="product?.reports && product.reports.length > 0"
               class="space-y-4"
             >
               <div

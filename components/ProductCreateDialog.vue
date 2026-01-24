@@ -36,11 +36,24 @@ const formSchema = toTypedSchema(
     description: z.string().optional(),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
+    feishuWebhookUrl: z.string().optional(),
   }),
 );
 
+const { data: userProfile } = useLazyFetch("/api/profile");
+
 const form = useForm({
   validationSchema: formSchema,
+});
+
+watch(isOpen, (open) => {
+  if (open && userProfile.value) {
+    form.setValues({
+      contactEmail: userProfile.value.email || "",
+      contactPhone: userProfile.value.phone || "",
+      feishuWebhookUrl: userProfile.value.feishuWebhookUrl || "",
+    });
+  }
 });
 
 const onSubmit = form.handleSubmit(async (values) => {
@@ -134,6 +147,19 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <Input
                   type="tel"
                   placeholder="+1 234 567 8900"
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
+            <FormItem>
+              <FormLabel>Feishu Webhook URL (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://open.feishu.cn/..."
                   v-bind="componentField"
                 />
               </FormControl>
