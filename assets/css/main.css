@@ -1,4 +1,4 @@
-@import "vue-sonner/lib/index.css";
+/* vue-sonner styles are handled by the component itself */
 
 @tailwind base;
 @tailwind components;
