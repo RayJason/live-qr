@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
-import { Loader2, QrCode as QrIcon, AlertTriangle } from 'lucide-vue-next'
+import { QrCode as QrIcon, AlertTriangle } from 'lucide-vue-next'
+import { Skeleton } from "@/components/ui/skeleton";
 
 definePageMeta({
   middleware: 'sidebase-auth'
@@ -38,8 +39,31 @@ const handleProductCreated = () => {
     </div>
 
     <!-- Loading State -->
-    <div v-if="pending" class="flex justify-center p-12">
-      <Loader2 class="h-8 w-8 animate-spin text-muted-foreground" />
+    <div v-if="pending" class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+       <Card v-for="i in 6" :key="i" class="flex flex-col">
+          <CardHeader>
+            <div class="flex justify-between items-start">
+               <Skeleton class="h-6 w-32" />
+               <Skeleton class="h-5 w-16" />
+            </div>
+            <div class="space-y-2 mt-2">
+               <Skeleton class="h-4 w-full" />
+               <Skeleton class="h-4 w-2/3" />
+            </div>
+          </CardHeader>
+          <CardContent class="flex-1">
+             <div class="space-y-2">
+                <div class="flex items-center mt-2">
+                   <Skeleton class="h-4 w-4 mr-2" />
+                   <Skeleton class="h-3 w-24" />
+                </div>
+                <Skeleton class="h-3 w-20 mt-2" />
+             </div>
+          </CardContent>
+          <CardFooter class="flex justify-end border-t pt-4">
+             <Skeleton class="h-9 w-20" />
+          </CardFooter>
+       </Card>
     </div>
 
     <!-- Error State -->
