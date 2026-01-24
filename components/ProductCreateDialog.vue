@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { z } from 'zod'
-import { toTypedSchema } from '@vee-validate/zod'
-import { useForm } from 'vee-validate'
-import { Button } from '@/components/ui/button'
+import { ref } from "vue";
+import { z } from "zod";
+import { toTypedSchema } from "@vee-validate/zod";
+import { useForm } from "vee-validate";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,58 +12,61 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog'
+} from "@/components/ui/dialog";
 import {
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { toast } from 'vue-sonner'
-import { Plus } from 'lucide-vue-next'
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "vue-sonner";
+import { Plus } from "lucide-vue-next";
 
-const emit = defineEmits(['product-created'])
+const emit = defineEmits(["product-created"]);
 
-const isOpen = ref(false)
-const isLoading = ref(false)
+const isOpen = ref(false);
+const isLoading = ref(false);
 
-const formSchema = toTypedSchema(z.object({
-  name: z.string().min(2).max(50),
-  description: z.string().optional(),
-  contactInfo: z.string().optional().describe('Phone number or email for finder to contact you'),
-}))
+const formSchema = toTypedSchema(
+  z.object({
+    name: z.string().min(2).max(50),
+    description: z.string().optional(),
+    contactEmail: z.string().optional(),
+    contactPhone: z.string().optional(),
+  }),
+);
 
 const form = useForm({
   validationSchema: formSchema,
-})
+});
 
 const onSubmit = form.handleSubmit(async (values) => {
   try {
-    isLoading.value = true
-    const { data, error } = await useFetch('/api/products', {
-      method: 'POST',
+    isLoading.value = true;
+    const { data, error } = await useFetch("/api/products", {
+      method: "POST",
       body: values,
-    })
+    });
 
     if (error.value) {
-      toast.error('Failed to create product')
-      return
+      toast.error("Failed to create product");
+      return;
     }
 
-    toast.success('Product created successfully')
-    isOpen.value = false
-    emit('product-created', data.value)
-    form.resetForm()
+    toast.success("Product created successfully");
+    isOpen.value = false;
+    emit("product-created", data.value);
+    form.resetForm();
   } catch (err) {
-    toast.error('An error occurred')
-    console.error(err)
+    toast.error("An error occurred");
+    console.error(err);
   } finally {
-    isLoading.value = false
+    isLoading.value = false;
   }
-})
+});
 </script>
 
 <template>
@@ -87,35 +90,60 @@ const onSubmit = form.handleSubmit(async (values) => {
             <FormItem>
               <FormLabel>Name</FormLabel>
               <FormControl>
-                <Input type="text" placeholder="Snowboard, Camera, Keys..." v-bind="componentField" />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          </FormField>
-          
-          <FormField v-slot="{ componentField }" name="description">
-            <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
-              <FormControl>
-                 <Textarea placeholder="Black Burton snowboard..." v-bind="componentField" />
+                <Input
+                  type="text"
+                  placeholder="Snowboard, Camera, Keys..."
+                  v-bind="componentField"
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           </FormField>
 
-          <FormField v-slot="{ componentField }" name="contactInfo">
-             <FormItem>
-               <FormLabel>Default Contact Info (Optional)</FormLabel>
-               <FormControl>
-                 <Input type="text" placeholder="+1 555-0199" v-bind="componentField" />
-               </FormControl>
-               <FormMessage />
-             </FormItem>
-           </FormField>
+          <FormField v-slot="{ componentField }" name="description">
+            <FormItem>
+              <FormLabel>Description (Optional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Black Burton snowboard..."
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <FormField v-slot="{ componentField }" name="contactEmail">
+            <FormItem>
+              <FormLabel>Email (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="your@email.com"
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
+
+          <FormField v-slot="{ componentField }" name="contactPhone">
+            <FormItem>
+              <FormLabel>Phone (Optional)</FormLabel>
+              <FormControl>
+                <Input
+                  type="tel"
+                  placeholder="+1 234 567 8900"
+                  v-bind="componentField"
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          </FormField>
         </div>
         <DialogFooter>
           <Button type="submit" :disabled="isLoading">
-            {{ isLoading ? 'Creating...' : 'Create Product' }}
+            {{ isLoading ? "Creating..." : "Create Product" }}
           </Button>
         </DialogFooter>
       </form>

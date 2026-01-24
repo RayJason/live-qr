@@ -5,7 +5,8 @@ import { z } from 'zod'
 const createProductSchema = z.object({
   name: z.string().min(1, 'Name is required').max(50),
   description: z.string().optional(),
-  contactInfo: z.string().optional(),
+  contactEmail: z.string().optional(),
+  contactPhone: z.string().optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -44,7 +45,8 @@ export default defineEventHandler(async (event) => {
         data: {
             name: validation.data.name,
             description: validation.data.description,
-            contactInfo: validation.data.contactInfo || null,
+            contactEmail: validation.data.contactEmail || null,
+            contactPhone: validation.data.contactPhone || null,
             userId: user.id,
             status: 'NORMAL'
         }
