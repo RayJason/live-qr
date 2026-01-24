@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import { z } from "zod";
 import { toTypedSchema } from "@vee-validate/zod";
 import { useForm } from "vee-validate";
@@ -76,20 +76,26 @@ const form = useForm({
 });
 
 // Populate form when data loads
-watchEffect(() => {
-  if (product.value) {
-    form.setValues({
-      name: product.value.name,
-      description: product.value.description || "",
-      contactEmail: product.value.contactEmail || "",
-      contactPhone: product.value.contactPhone || "",
-      lostMessage: product.value.lostMessage || "",
-      feishuWebhookUrl: product.value.feishuWebhookUrl || "",
-      status: product.value.status === "LOST",
-      showContactWhenSafe: product.value.showContactWhenSafe || false,
-    });
-  }
-});
+watch(
+  () => product.value,
+  (newProduct) => {
+    if (newProduct) {
+      form.resetForm({
+        values: {
+          name: newProduct.name,
+          description: newProduct.description || "",
+          contactEmail: newProduct.contactEmail || "",
+          contactPhone: newProduct.contactPhone || "",
+          lostMessage: newProduct.lostMessage || "",
+          feishuWebhookUrl: newProduct.feishuWebhookUrl || "",
+          status: newProduct.status === "LOST",
+          showContactWhenSafe: newProduct.showContactWhenSafe || false,
+        },
+      });
+    }
+  },
+  { immediate: true },
+);
 
 const isLost = computed(() => form.values.status);
 
