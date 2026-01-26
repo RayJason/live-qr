@@ -8,10 +8,10 @@ import { QrCode as QrIcon, AlertTriangle } from 'lucide-vue-next'
 import { Skeleton } from "@/components/ui/skeleton";
 
 definePageMeta({
-  middleware: 'sidebase-auth'
+  middleware: 'auth'
 })
 
-const { data: session } = useAuth()
+const { user } = useUserSession()
 
 useSeoMeta({
   title: 'Dashboard',
@@ -30,7 +30,7 @@ const handleProductCreated = () => {
       <div>
         <h2 class="text-3xl font-bold tracking-tight">Dashboard</h2>
         <p class="text-muted-foreground">
-          Welcome back, {{ session?.user?.name }}
+          Welcome back, {{ user?.name }}
         </p>
       </div>
       <div class="flex items-center space-x-2">

@@ -1,4 +1,3 @@
-import { getServerSession } from '#auth'
 import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
 
@@ -9,17 +8,13 @@ const updateSchema = z.object({
 })
 
 export default defineEventHandler(async (event) => {
-    const session = await getServerSession(event)
-    
-    if (!session?.user?.email) {
-        throw createError({ statusCode: 401, message: 'Unauthorized' })
-    }
-    
+    const { user } = await requireUserSession(event)
+
     const body = await readBody(event)
     const validated = updateSchema.parse(body)
-    
-    const user = await prisma.user.update({
-        where: { email: session.user.email },
+
+    const dbUser = await prisma.user.update({
+        where: { id: user.id },
         data: validated,
         select: {
             id: true,
@@ -30,6 +25,6 @@ export default defineEventHandler(async (event) => {
             feishuWebhookUrl: true,
         }
     })
-    
-    return user
+
+    return dbUser
 })

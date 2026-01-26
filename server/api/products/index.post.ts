@@ -1,27 +1,19 @@
-import { getServerSession } from '#auth'
 import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
 
 const createProductSchema = z.object({
-  name: z.string().min(1, 'Name is required').max(50),
-  description: z.string().optional(),
-  contactEmail: z.string().optional(),
-  contactPhone: z.string().optional(),
+    name: z.string().min(1, 'Name is required').max(50),
+    description: z.string().optional(),
+    contactEmail: z.string().optional(),
+    contactPhone: z.string().optional(),
 })
 
 export default defineEventHandler(async (event) => {
-    const session = await getServerSession(event)
-    
-    if (!session || !session.user || !session.user.email) {
-        throw createError({
-            statusCode: 401,
-            statusMessage: 'Unauthorized'
-        })
-    }
-    
+    const { user } = await requireUserSession(event)
+
     const body = await readBody(event)
     const validation = createProductSchema.safeParse(body)
-    
+
     if (!validation.success) {
         throw createError({
             statusCode: 400,
@@ -29,18 +21,7 @@ export default defineEventHandler(async (event) => {
             data: validation.error.flatten()
         })
     }
-    
-    const user = await prisma.user.findUnique({
-        where: { email: session.user.email }
-    })
-    
-    if (!user) {
-         throw createError({
-            statusCode: 401,
-            statusMessage: 'User not found'
-        })
-    }
-    
+
     const product = await prisma.product.create({
         data: {
             name: validation.data.name,
@@ -51,6 +32,6 @@ export default defineEventHandler(async (event) => {
             status: 'NORMAL'
         }
     })
-    
+
     return product
 })

@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 definePageMeta({
-  middleware: "sidebase-auth",
+  middleware: "auth",
 });
 
 const route = useRoute();

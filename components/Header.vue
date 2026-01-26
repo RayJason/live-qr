@@ -12,16 +12,17 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Settings, LogOut } from 'lucide-vue-next'
 
-const { status, signIn, signOut, data: session, getSession } = useAuth()
+const { loggedIn, user, clear, fetch: fetchSession } = useUserSession()
 
 const profileDialogOpen = ref(false)
 
 const handleLogin = () => {
-  signIn('google', { callbackUrl: '/dashboard' })
+  navigateTo('/auth/google', { external: true })
 }
 
-const handleLogout = () => {
-  signOut({ callbackUrl: '/' })
+const handleLogout = async () => {
+  await clear()
+  navigateTo('/')
 }
 
 const openProfileSettings = () => {
@@ -30,11 +31,11 @@ const openProfileSettings = () => {
 
 // Refresh session when profile is saved to update displayed name
 const handleProfileSaved = async () => {
-  await getSession({ force: true })
+  await fetchSession()
 }
 
 const userInitials = computed(() => {
-  const name = session.value?.user?.name || ''
+  const name = user.value?.name || ''
   return name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2)
 })
 </script>
@@ -58,22 +59,22 @@ const userInitials = computed(() => {
         </div>
         <nav class="flex items-center space-x-2">
           <ClientOnly>
-            <template v-if="status === 'authenticated'">
+            <template v-if="loggedIn">
               <DropdownMenu>
                 <DropdownMenuTrigger as-child>
                   <Button variant="ghost" class="relative h-9 px-2 hover:bg-accent">
                     <Avatar class="h-7 w-7 mr-2">
-                      <AvatarImage :src="session?.user?.image || ''" :alt="session?.user?.name || ''" />
+                      <AvatarImage :src="user?.image || ''" :alt="user?.name || ''" />
                       <AvatarFallback class="text-xs">{{ userInitials }}</AvatarFallback>
                     </Avatar>
-                    <span class="hidden sm:inline-block text-sm font-medium">{{ session?.user?.name }}</span>
+                    <span class="hidden sm:inline-block text-sm font-medium">{{ user?.name }}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent class="w-56" align="end">
                   <DropdownMenuLabel class="font-normal">
                     <div class="flex flex-col space-y-1">
-                      <p class="text-sm font-medium leading-none">{{ session?.user?.name }}</p>
-                      <p class="text-xs leading-none text-muted-foreground">{{ session?.user?.email }}</p>
+                      <p class="text-sm font-medium leading-none">{{ user?.name }}</p>
+                      <p class="text-xs leading-none text-muted-foreground">{{ user?.email }}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -96,7 +97,7 @@ const userInitials = computed(() => {
                 @saved="handleProfileSaved"
               />
             </template>
-            <template v-else-if="status === 'unauthenticated'">
+            <template v-else>
               <Button @click="handleLogin">
                 Sign In with Google
               </Button>
@@ -107,4 +108,3 @@ const userInitials = computed(() => {
     </div>
   </header>
 </template>
-

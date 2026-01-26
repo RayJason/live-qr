@@ -1,15 +1,10 @@
-import { getServerSession } from '#auth'
 import prisma from '~/server/utils/prisma'
 
 export default defineEventHandler(async (event) => {
-    const session = await getServerSession(event)
-    
-    if (!session?.user?.email) {
-        throw createError({ statusCode: 401, message: 'Unauthorized' })
-    }
-    
-    const user = await prisma.user.findUnique({
-        where: { email: session.user.email },
+    const { user } = await requireUserSession(event)
+
+    const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
         select: {
             id: true,
             name: true,
@@ -19,10 +14,10 @@ export default defineEventHandler(async (event) => {
             feishuWebhookUrl: true,
         }
     })
-    
-    if (!user) {
+
+    if (!dbUser) {
         throw createError({ statusCode: 404, message: 'User not found' })
     }
-    
-    return user
+
+    return dbUser
 })
