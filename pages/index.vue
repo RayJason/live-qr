@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card'
 import { QrCode, Shield, Zap, ArrowRight, Github } from 'lucide-vue-next'
 
-const { status, signIn } = useAuth()
+const { loggedIn } = useUserSession()
 
 useSeoMeta({
   title: 'Never Lose Your Gear',
@@ -15,11 +15,11 @@ useSeoMeta({
 })
 
 const handleGetStarted = () => {
-    if (status.value === 'authenticated') {
-        navigateTo('/dashboard')
-    } else {
-        signIn('google', { callbackUrl: '/dashboard' })
-    }
+  if (loggedIn.value) {
+    navigateTo('/dashboard')
+  } else {
+    navigateTo('/auth/google', { external: true })
+  }
 }
 </script>
 
@@ -32,9 +32,9 @@ const handleGetStarted = () => {
         <h1 class="text-5xl md:text-7xl font-bold tracking-tight text-primary">
           Never Lose <br /> Your Gear.
         </h1>
-        
+
         <p class="text-xl text-muted-foreground max-w-lg leading-relaxed">
-          Smart, trackable QR codes for your most valuable items. 
+          Smart, trackable QR codes for your most valuable items.
           Protect what matters with instant "Safe" and "Lost" modes.
         </p>
 
@@ -54,11 +54,14 @@ const handleGetStarted = () => {
       <!-- Right Column: Visual -->
       <div class="relative flex items-center justify-center">
         <!-- Abstract Background Blob -->
-        <div class="absolute inset-0 bg-gradient-to-tr from-gray-100 to-gray-50 rounded-full blur-3xl opacity-70 -z-10 transform scale-110"></div>
-        
+        <div
+          class="absolute inset-0 bg-gradient-to-tr from-gray-100 to-gray-50 rounded-full blur-3xl opacity-70 -z-10 transform scale-110">
+        </div>
+
         <!-- Large QR Icon -->
-        <div class="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 rotate-3 transition-transform hover:rotate-0 duration-500">
-           <QrCode class="w-64 h-64 text-primary stroke-[1.5]" />
+        <div
+          class="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 rotate-3 transition-transform hover:rotate-0 duration-500">
+          <QrCode class="w-64 h-64 text-primary stroke-[1.5]" />
         </div>
       </div>
     </section>
@@ -91,7 +94,7 @@ const handleGetStarted = () => {
             </CardContent>
           </Card>
 
-           <Card class="bg-card/50 backdrop-blur-sm border-muted transition-all hover:border-primary/50 hover:shadow-md">
+          <Card class="bg-card/50 backdrop-blur-sm border-muted transition-all hover:border-primary/50 hover:shadow-md">
             <CardHeader>
               <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
                 <Zap class="w-6 h-6" />
@@ -110,7 +113,7 @@ const handleGetStarted = () => {
             </CardContent>
           </Card>
 
-           <Card class="bg-card/50 backdrop-blur-sm border-muted transition-all hover:border-primary/50 hover:shadow-md">
+          <Card class="bg-card/50 backdrop-blur-sm border-muted transition-all hover:border-primary/50 hover:shadow-md">
             <CardHeader>
               <div class="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4 text-primary">
                 <Shield class="w-6 h-6" />
