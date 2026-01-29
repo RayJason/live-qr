@@ -134,10 +134,5 @@ const handleGetStarted = () => {
         </div>
       </div>
     </section>
-
-    <!-- Footer -->
-    <footer class="py-8 text-center text-sm text-muted-foreground border-t">
-      <p>&copy; {{ new Date().getFullYear() }} Anti-Lost. Open Source Project.</p>
-    </footer>
   </div>
 </template>

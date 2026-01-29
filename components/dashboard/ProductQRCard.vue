@@ -73,7 +73,7 @@ const copyQrImage = () => {
 </script>
 
 <template>
-  <Card class="overflow-hidden border-2 border-primary/10 h-full">
+  <Card class="overflow-hidden border-2 border-primary/10">
     <CardHeader class="bg-primary/5 pb-6">
       <CardTitle class="flex items-center gap-2">
         <Wand2 class="h-5 w-5 text-primary" />
