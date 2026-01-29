@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import Footer from '@/components/Footer.vue'
 // Default layout
 </script>
 
@@ -8,5 +9,6 @@
     <main class="flex-1">
       <slot />
     </main>
+    <Footer />
   </div>
 </template>
