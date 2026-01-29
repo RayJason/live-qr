@@ -27,16 +27,12 @@ import {
 } from "@/components/ui/form";
 import { toast } from "vue-sonner";
 import {
-  Loader2,
   ArrowLeft,
-  Printer,
   Trash2,
   ExternalLink,
-  Copy,
-  Wand2,
-  Download,
 } from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
+import ProductQRCard from "@/components/dashboard/ProductQRCard.vue";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,7 +44,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import type { DotType, CornerSquareType, CornerDotType } from "qr-code-styling";
 
 definePageMeta({
   middleware: "auth",
@@ -166,79 +161,6 @@ const deleteProduct = async () => {
   }
 };
 
-// QR Design Logic
-const advancedQrRef = ref<any>(null);
-const qrDotsType = ref<DotType>("rounded");
-const qrCornerSquareType = ref<CornerSquareType>("extra-rounded");
-const qrCornerDotType = ref<CornerDotType>("dot");
-
-const dotTypes = [
-  { value: "square", label: "Square" },
-  { value: "dots", label: "Dots" },
-  { value: "rounded", label: "Rounded" },
-  { value: "classy", label: "Classy" },
-  { value: "classy-rounded", label: "Classy R" },
-  { value: "extra-rounded", label: "Extra R" },
-];
-
-const cornerSquareTypes = [
-  { value: "square", label: "Square" },
-  { value: "extra-rounded", label: "Rounded" },
-  { value: "dot", label: "Dot" },
-];
-
-const qrCodeUrl = computed(() => {
-  if (import.meta.client) {
-    return `${window.location.origin}/s/${productId}`;
-  }
-  return "";
-});
-
-const copyLink = () => {
-  copy(qrCodeUrl.value);
-  toast.success(t('dashboard.linkCopied'));
-};
-
-const copyQrImage = () => {
-  if (advancedQrRef.value) {
-    const success = advancedQrRef.value.download("png");
-    if (success) {
-      toast.success(t('dashboard.imageDownloaded'));
-    } else {
-      toast.error("QR Code not ready");
-    }
-  } else {
-    toast.error("QR Code component not found");
-  }
-};
-
-const printQr = () => {
-  const printWindow = window.open("", "_blank");
-  if (printWindow) {
-    printWindow.document.write(`
-      <html>
-        <head>
-          <title>${t('dashboard.printTitle')} - ${product.value?.name}</title>
-          <style>
-            body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-            h1 { margin-bottom: 20px; }
-            img { max-width: 300px; height: auto; }
-            .footer { margin-top: 20px; font-size: 12px; color: #666; }
-          </style>
-        </head>
-        <body>
-          <h1>${product.value?.name}</h1>
-          <div id="qr-target"></div>
-          <div class="footer">Scan to return to owner</div>
-          <script>
-            document.body.innerHTML = '<h2>${t('dashboard.printInstruction')}</h2>';
-          <\/script>
-        </body>
-      </html>
-    `);
-    printWindow.print();
-  }
-};
 </script>
 
 <template>
@@ -304,10 +226,8 @@ const printQr = () => {
       </div>
     </div>
 
-    <div v-else-if="error">
-      <div class="text-destructive">
-        Error loading product: {{ error.message }}
-      </div>
+    <div v-else-if="error" class="text-destructive">
+      Error loading product: {{ error.message }}
     </div>
 
     <div v-else class="grid gap-6 md:grid-cols-2">
@@ -489,79 +409,7 @@ const printQr = () => {
 
       <!-- QR & Reports Column -->
       <div class="space-y-6">
-        <Card class="overflow-hidden border-2 border-primary/10">
-          <CardHeader class="bg-primary/5 pb-6">
-            <CardTitle class="flex items-center gap-2">
-                <Wand2 class="h-5 w-5 text-primary" />
-                {{ t('dashboard.qrDesign') }}
-            </CardTitle>
-          </CardHeader>
-          <CardContent class="pt-6 flex flex-col items-center space-y-6">
-            <div class="bg-white p-4 rounded-xl shadow-sm border" ref="qrWrapper">
-                 <AdvancedQrCode 
-                    ref="advancedQrRef"
-                    :data="qrCodeUrl"
-                    :width="250"
-                    :height="250"
-                    :dots-type="qrDotsType"
-                    :corner-square-type="qrCornerSquareType"
-                    :corner-dot-type="qrCornerDotType"
-                    background="#ffffff"
-                    dots-color="#000000"
-                    corner-square-color="#000000"
-                    corner-dot-color="#000000"
-                 />
-            </div>
-
-            <!-- Customization Controls -->
-            <div class="w-full space-y-4">
-                <div class="space-y-2">
-                    <Label class="text-xs font-semibold uppercase text-muted-foreground">Dots Style</Label>
-                    <div class="flex flex-wrap gap-2">
-                        <Button 
-                            v-for="type in dotTypes" 
-                            :key="type.value"
-                            variant="outline" 
-                            size="sm" 
-                            class="h-7 text-xs"
-                            :class="qrDotsType === type.value ? 'border-primary bg-primary/5 text-primary' : ''"
-                            @click="qrDotsType = type.value as DotType"
-                        >
-                            {{ type.label }}
-                        </Button>
-                    </div>
-                </div>
-
-                 <div class="space-y-2">
-                    <Label class="text-xs font-semibold uppercase text-muted-foreground">Corner Style</Label>
-                    <div class="flex flex-wrap gap-2">
-                        <Button 
-                            v-for="type in cornerSquareTypes" 
-                            :key="type.value"
-                            variant="outline" 
-                            size="sm" 
-                            class="h-7 text-xs"
-                            :class="qrCornerSquareType === type.value ? 'border-primary bg-primary/5 text-primary' : ''"
-                            @click="qrCornerSquareType = type.value as CornerSquareType"
-                        >
-                            {{ type.label }}
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 w-full pt-4">
-              <Button variant="secondary" class="w-full" @click="copyLink">
-                <Copy class="mr-2 h-4 w-4" />
-                {{ t('action.copyLink') }}
-              </Button>
-               <Button variant="secondary" class="w-full" @click="copyQrImage">
-                <Download class="mr-2 h-4 w-4" />
-                {{ t('action.download') }}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <ProductQRCard :productId="productId" />
 
         <Card>
           <CardHeader>
