@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Settings, LogOut } from 'lucide-vue-next'
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { loggedIn, user, clear, fetch: fetchSession } = useUserSession()
 
@@ -58,6 +59,7 @@ const userInitials = computed(() => {
           <!-- Search or other controls could go here -->
         </div>
         <nav class="flex items-center space-x-2">
+          <LanguageSwitcher />
           <ClientOnly>
             <template v-if="loggedIn">
               <DropdownMenu>

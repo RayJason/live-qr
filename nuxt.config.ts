@@ -10,15 +10,34 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       ],
       link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' }
       ]
     }
   },
   devtools: { enabled: true },
   modules: [
     '@nuxtjs/tailwindcss',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
+    '@nuxtjs/i18n'
   ],
+  i18n: {
+    vueI18n: './i18n.config.ts',
+    locales: [
+      { code: 'en', file: 'en.json' },
+      { code: 'zh', file: 'zh.json' },
+      { code: 'ja', file: 'ja.json' },
+      { code: 'ko', file: 'ko.json' }
+    ],
+    lazy: true,
+    langDir: 'translations',
+    defaultLocale: 'en',
+    strategy: 'no_prefix',
+    detectBrowserLanguage: {
+      useCookie: true,
+      cookieKey: 'i18n_redirected',
+      redirectOn: 'root'
+    }
+  } as any,
   components: [
     {
       path: '~/components',
@@ -36,8 +55,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     oauth: {
       google: {
-        clientId: '',
-        clientSecret: ''
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET
       }
     }
   }
