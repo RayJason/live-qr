@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useClipboard } from "@vueuse/core";
 import {
   Card,
   CardContent,
@@ -24,11 +25,18 @@ import {
   FormMessage,
   FormDescription,
 } from "@/components/ui/form";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "vue-sonner";
-import { Loader2, ArrowLeft, Printer, Trash2 } from "lucide-vue-next";
+import {
+  Loader2,
+  ArrowLeft,
+  Printer,
+  Trash2,
+  ExternalLink,
+  Copy,
+  Wand2,
+  Download,
+} from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
-import QrcodeVue from "qrcode.vue";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,14 +48,17 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import type { DotType, CornerSquareType, CornerDotType } from "qr-code-styling";
 
 definePageMeta({
   middleware: "auth",
 });
 
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const productId = route.params.id as string;
+const { copy } = useClipboard({ legacy: true });
 
 const {
   data: product,
@@ -100,7 +111,10 @@ watch(
 
 const isLost = computed(() => form.values.status);
 
+const isSaving = ref(false); // Add isSaving ref which was missing in HEAD logic but used in template
+
 const onSubmit = form.handleSubmit(async (values) => {
+  isSaving.value = true;
   try {
     const payload = {
       ...values,
@@ -120,7 +134,7 @@ const onSubmit = form.handleSubmit(async (values) => {
     }
 
     await $fetch(`/api/products/${productId}`, {
-      method: "PUT",
+      method: "patch",
       body: payload,
     });
 
@@ -131,10 +145,12 @@ const onSubmit = form.handleSubmit(async (values) => {
       // Cache invalidation is not critical
     }
 
-    toast.success("Product updated successfully");
+    toast.success(t('dashboard.saveSuccess'));
   } catch (e) {
     toast.error("Failed to update product");
     refresh(); // Revert on error
+  } finally {
+    isSaving.value = false;
   }
 });
 
@@ -143,43 +159,86 @@ const deleteProduct = async () => {
     await $fetch(`/api/products/${productId}`, {
       method: "DELETE",
     });
-    toast.success("Product deleted");
+    toast.success(t('dashboard.deleteSuccess'));
     router.push("/dashboard");
   } catch (e) {
     toast.error("Failed to delete product");
   }
 };
 
-const printQr = () => {
-  const printWindow = window.open("", "", "width=600,height=600");
-  if (printWindow) {
-    const canvas = document.querySelector("canvas");
-    const imgUrl = canvas?.toDataURL();
-    printWindow.document.write(
-      `<img src="${imgUrl}" style="width: 100%; max-width: 400px; display: block; margin: 0 auto;" />`,
-    );
-    // Removed explicit script - wait for load to be safe, but simple approach usually works
-    printWindow.document.write(
-      '<div style="text-align:center; font-family: sans-serif; margin-top: 20px;">',
-    );
-    printWindow.document.write(
-      `<h2>${product.value?.name || "Anti-Lost Item"}</h2>`,
-    );
-    printWindow.document.write("</div>");
-    printWindow.document.write(
-      "<script>window.onload = function() { window.print(); window.close(); }<\/script>",
-    );
-    printWindow.document.close();
-  }
-};
+// QR Design Logic
+const advancedQrRef = ref<any>(null);
+const qrDotsType = ref<DotType>("rounded");
+const qrCornerSquareType = ref<CornerSquareType>("extra-rounded");
+const qrCornerDotType = ref<CornerDotType>("dot");
 
-// Public URL
-const publicUrl = computed(() => {
+const dotTypes = [
+  { value: "square", label: "Square" },
+  { value: "dots", label: "Dots" },
+  { value: "rounded", label: "Rounded" },
+  { value: "classy", label: "Classy" },
+  { value: "classy-rounded", label: "Classy R" },
+  { value: "extra-rounded", label: "Extra R" },
+];
+
+const cornerSquareTypes = [
+  { value: "square", label: "Square" },
+  { value: "extra-rounded", label: "Rounded" },
+  { value: "dot", label: "Dot" },
+];
+
+const qrCodeUrl = computed(() => {
   if (import.meta.client) {
     return `${window.location.origin}/s/${productId}`;
   }
   return "";
 });
+
+const copyLink = () => {
+  copy(qrCodeUrl.value);
+  toast.success(t('dashboard.linkCopied'));
+};
+
+const copyQrImage = () => {
+  if (advancedQrRef.value) {
+    const success = advancedQrRef.value.download("png");
+    if (success) {
+      toast.success(t('dashboard.imageDownloaded'));
+    } else {
+      toast.error("QR Code not ready");
+    }
+  } else {
+    toast.error("QR Code component not found");
+  }
+};
+
+const printQr = () => {
+  const printWindow = window.open("", "_blank");
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>${t('dashboard.printTitle')} - ${product.value?.name}</title>
+          <style>
+            body { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+            h1 { margin-bottom: 20px; }
+            img { max-width: 300px; height: auto; }
+            .footer { margin-top: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <h1>${product.value?.name}</h1>
+          <div id="qr-target"></div>
+          <div class="footer">Scan to return to owner</div>
+          <script>
+            document.body.innerHTML = '<h2>${t('dashboard.printInstruction')}</h2>';
+          <\/script>
+        </body>
+      </html>
+    `);
+    printWindow.print();
+  }
+};
 </script>
 
 <template>
@@ -256,16 +315,16 @@ const publicUrl = computed(() => {
       <div class="space-y-6">
         <Card>
           <CardHeader>
-            <CardTitle>Product Settings</CardTitle>
+            <CardTitle>{{ t('dashboard.productDetails') }}</CardTitle>
             <CardDescription
-              >Update details and privacy settings.</CardDescription
+              >{{ t('dashboard.productDetailsDesc') }}</CardDescription
             >
           </CardHeader>
           <CardContent>
             <form @submit="onSubmit" class="space-y-4">
               <FormField v-slot="{ componentField }" name="name">
                 <FormItem>
-                  <FormLabel>Product Name</FormLabel>
+                  <FormLabel>{{ t('dashboard.itemName') }}</FormLabel>
                   <FormControl>
                     <Input v-bind="componentField" />
                   </FormControl>
@@ -275,7 +334,7 @@ const publicUrl = computed(() => {
 
               <FormField v-slot="{ componentField }" name="description">
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel>{{ t('dashboard.description') }}</FormLabel>
                   <FormControl>
                     <Textarea v-bind="componentField" />
                   </FormControl>
@@ -286,7 +345,7 @@ const publicUrl = computed(() => {
               <div class="p-4 border rounded-lg bg-muted/50 space-y-4">
                 <div class="flex items-center justify-between">
                   <Label class="text-base font-medium leading-none"
-                    >Lost Mode</Label
+                    >{{ t('dashboard.lostMode') }}</Label
                   >
                   <FormField v-slot="{ componentField }" name="status">
                     <Switch
@@ -296,14 +355,13 @@ const publicUrl = computed(() => {
                   </FormField>
                 </div>
                 <p class="text-sm text-muted-foreground">
-                  When enabled, scanning the QR code will show your contact info
-                  and alert that the item is lost.
+                  {{ t('dashboard.lostModeDesc') }}
                 </p>
 
                 <template v-if="isLost">
                   <FormField v-slot="{ componentField }" name="lostMessage">
                     <FormItem>
-                      <FormLabel>Lost Message</FormLabel>
+                      <FormLabel>{{ t('dashboard.lostMessage') }}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="Please return to..."
@@ -315,7 +373,7 @@ const publicUrl = computed(() => {
                   </FormField>
                   <FormField v-slot="{ componentField }" name="contactEmail">
                     <FormItem>
-                      <FormLabel>Email (Optional)</FormLabel>
+                      <FormLabel>{{ t('dashboard.contactEmail') }}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="your@email.com"
@@ -327,7 +385,7 @@ const publicUrl = computed(() => {
                   </FormField>
                   <FormField v-slot="{ componentField }" name="contactPhone">
                     <FormItem>
-                      <FormLabel>Phone (Optional)</FormLabel>
+                      <FormLabel>{{ t('dashboard.contactPhone') }}</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="+1 234 567 8900"
@@ -346,7 +404,7 @@ const publicUrl = computed(() => {
                 <div class="flex items-center justify-between">
                   <Label
                     class="text-base font-medium leading-none text-green-700 dark:text-green-400"
-                    >Safe Mode Contact</Label
+                    >{{ t('dashboard.showContactSafe') }}</Label
                   >
                   <FormField
                     v-slot="{ componentField }"
@@ -359,14 +417,13 @@ const publicUrl = computed(() => {
                   </FormField>
                 </div>
                 <p class="text-sm text-muted-foreground">
-                  Show your contact info even when the item is marked as Safe
-                  (Protected).
+                  {{ t('dashboard.showContactSafeDesc') }}
                 </p>
               </div>
 
               <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
                 <FormItem>
-                  <FormLabel>Feishu Webhook URL (Optional)</FormLabel>
+                  <FormLabel>{{ t('dashboard.feishuWebhook') }}</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="https://open.feishu.cn/..."
@@ -374,20 +431,19 @@ const publicUrl = computed(() => {
                     />
                   </FormControl>
                   <FormDescription>
-                    Receive notifications in Lark/Feishu when someone scans or
-                    reports this item.
+                    {{ t('dashboard.feishuWebhookDesc') }}
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               </FormField>
 
               <div class="flex justify-end pt-4">
-                <Button type="submit" :disabled="form.isSubmitting.value">
+                <Button type="submit" :disabled="isSaving">
                   <Loader2
-                    v-if="form.isSubmitting.value"
+                    v-if="isSaving"
                     class="mr-2 h-4 w-4 animate-spin"
                   />
-                  {{ form.isSubmitting.value ? "Saving..." : "Save Changes" }}
+                  {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
                 </Button>
               </div>
             </form>
@@ -396,34 +452,33 @@ const publicUrl = computed(() => {
 
         <Card class="border-destructive">
           <CardHeader>
-            <CardTitle class="text-destructive">Danger Zone</CardTitle>
+            <CardTitle class="text-destructive">{{ t('dashboard.deleteConfirmTitle') || 'Danger Zone' }}</CardTitle>
           </CardHeader>
           <CardContent>
             <p class="text-sm text-muted-foreground mb-4">
-              Deleting this product will permanently remove it and disable the
-              QR code.
+               {{ t('dashboard.deleteConfirmDesc') }}
             </p>
             <AlertDialog>
               <AlertDialogTrigger as-child>
                 <Button variant="destructive">
                   <Trash2 class="mr-2 h-4 w-4" />
-                  Delete Product
+                  {{ t('action.delete') }}
                 </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogTitle>{{ t('dashboard.deleteConfirmTitle') }}</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone.
+                    {{ t('dashboard.deleteConfirmDesc') }}
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogCancel>{{ t('action.cancel') }}</AlertDialogCancel>
                   <AlertDialogAction
                     @click="deleteProduct"
                     class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   >
-                    Delete
+                    {{ t('action.delete') }}
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -434,35 +489,83 @@ const publicUrl = computed(() => {
 
       <!-- QR & Reports Column -->
       <div class="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>QR Code</CardTitle>
-            <CardDescription
-              >Print this and attach it to your item.</CardDescription
-            >
+        <Card class="overflow-hidden border-2 border-primary/10">
+          <CardHeader class="bg-primary/5 pb-6">
+            <CardTitle class="flex items-center gap-2">
+                <Wand2 class="h-5 w-5 text-primary" />
+                {{ t('dashboard.qrDesign') }}
+            </CardTitle>
           </CardHeader>
-          <CardContent class="flex flex-col items-center">
-            <div class="bg-white p-4 rounded-lg border shadow-sm">
-              <ClientOnly>
-                <QrcodeVue :value="publicUrl" :size="200" level="H" />
-              </ClientOnly>
+          <CardContent class="pt-6 flex flex-col items-center space-y-6">
+            <div class="bg-white p-4 rounded-xl shadow-sm border" ref="qrWrapper">
+                 <AdvancedQrCode 
+                    ref="advancedQrRef"
+                    :data="qrCodeUrl"
+                    :width="250"
+                    :height="250"
+                    :dots-type="qrDotsType"
+                    :corner-square-type="qrCornerSquareType"
+                    :corner-dot-type="qrCornerDotType"
+                    background="#ffffff"
+                    dots-color="#000000"
+                    corner-square-color="#000000"
+                    corner-dot-color="#000000"
+                 />
             </div>
-            <div class="mt-4 text-center">
-              <p class="text-sm font-medium">{{ product?.name }}</p>
-              <p class="text-xs text-muted-foreground mt-1">{{ publicUrl }}</p>
+
+            <!-- Customization Controls -->
+            <div class="w-full space-y-4">
+                <div class="space-y-2">
+                    <Label class="text-xs font-semibold uppercase text-muted-foreground">Dots Style</Label>
+                    <div class="flex flex-wrap gap-2">
+                        <Button 
+                            v-for="type in dotTypes" 
+                            :key="type.value"
+                            variant="outline" 
+                            size="sm" 
+                            class="h-7 text-xs"
+                            :class="qrDotsType === type.value ? 'border-primary bg-primary/5 text-primary' : ''"
+                            @click="qrDotsType = type.value as DotType"
+                        >
+                            {{ type.label }}
+                        </Button>
+                    </div>
+                </div>
+
+                 <div class="space-y-2">
+                    <Label class="text-xs font-semibold uppercase text-muted-foreground">Corner Style</Label>
+                    <div class="flex flex-wrap gap-2">
+                        <Button 
+                            v-for="type in cornerSquareTypes" 
+                            :key="type.value"
+                            variant="outline" 
+                            size="sm" 
+                            class="h-7 text-xs"
+                            :class="qrCornerSquareType === type.value ? 'border-primary bg-primary/5 text-primary' : ''"
+                            @click="qrCornerSquareType = type.value as CornerSquareType"
+                        >
+                            {{ type.label }}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 w-full pt-4">
+              <Button variant="secondary" class="w-full" @click="copyLink">
+                <Copy class="mr-2 h-4 w-4" />
+                {{ t('action.copyLink') }}
+              </Button>
+               <Button variant="secondary" class="w-full" @click="copyQrImage">
+                <Download class="mr-2 h-4 w-4" />
+                {{ t('action.download') }}
+              </Button>
             </div>
           </CardContent>
-          <CardFooter class="justify-center">
-            <Button variant="outline" @click="printQr">
-              <Printer class="mr-2 h-4 w-4" />
-              Print QR
-            </Button>
-          </CardFooter>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Reports</CardTitle>
+            <CardTitle>{{ t('dashboard.reports') }}</CardTitle>
           </CardHeader>
           <CardContent>
             <div
@@ -488,7 +591,7 @@ const publicUrl = computed(() => {
               </div>
             </div>
             <div v-else class="text-sm text-muted-foreground text-center py-4">
-              No reports yet.
+              {{ t('dashboard.noReports') }}
             </div>
           </CardContent>
         </Card>

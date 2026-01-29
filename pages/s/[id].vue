@@ -30,6 +30,7 @@ import {
   ShieldCheck,
   Phone,
   Mail,
+  Globe
 } from "lucide-vue-next";
 
 definePageMeta({
@@ -37,6 +38,7 @@ definePageMeta({
   layout: false,
 });
 
+const { t, locale, setLocale, locales } = useI18n();
 const route = useRoute();
 const productId = route.params.id as string;
 
@@ -52,8 +54,8 @@ useSeoMeta({
   title: () =>
     product.value?.name
       ? product.value?.status === "LOST"
-        ? `LOST ITEM: ${product.value.name}`
-        : `Safe Item - ${product.value.name}`
+        ? `${t('status.lost')}: ${product.value?.name}`
+        : `${t('status.safe')} - ${product.value?.name}`
       : "Anti-Lost Item",
   description: () =>
     product.value?.status === "LOST"
@@ -62,8 +64,8 @@ useSeoMeta({
   ogTitle: () =>
     product.value?.name
       ? product.value?.status === "LOST"
-        ? `LOST ITEM: ${product.value.name}`
-        : `Safe Item - ${product.value.name}`
+        ? `${t('status.lost')}: ${product.value?.name}`
+        : `${t('status.safe')} - ${product.value?.name}`
       : "Anti-Lost Item",
   ogDescription: () =>
     product.value?.status === "LOST"
@@ -81,7 +83,7 @@ const formSchema = toTypedSchema(
   z.object({
     finderContact: z
       .string()
-      .min(1, "Please provide a way to contact you (Phone/Email)"),
+      .min(1, t('action.yourContactPlaceholder')),
     message: z.string().optional(),
   }),
 );
@@ -103,13 +105,17 @@ const onSubmit = form.handleSubmit(async (values) => {
       },
     });
     reportSuccess.value = true;
-    toast.success("Thank you! Report sent to the owner.");
+    toast.success(t('action.success'));
   } catch (e) {
     toast.error("Failed to send report. Please try again.");
   } finally {
     isSubmitting.value = false;
   }
 });
+
+const availableLocales = computed(() => {
+  return (locales.value as any[]).filter(i => i.code !== locale.value)
+})
 </script>
 
 <template>
@@ -117,15 +123,15 @@ const onSubmit = form.handleSubmit(async (values) => {
     class="min-h-screen flex flex-col items-center justify-center p-4 transition-colors duration-500"
     :class="
       isLost
-        ? 'bg-gradient-to-b from-red-50 to-orange-100 dark:from-red-950/20 dark:to-background'
-        : 'bg-gradient-to-b from-emerald-50 to-slate-100 dark:from-emerald-950/20 dark:to-background'
+        ? 'bg-gradient-to-b from-red-50 to-orange-100'
+        : 'bg-gradient-to-b from-emerald-50 to-slate-100'
     "
   >
     <div v-if="pending" class="flex flex-col items-center gap-4">
       <div
         class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"
       ></div>
-      <p class="text-muted-foreground animate-pulse">Loading item details...</p>
+      <p class="text-muted-foreground animate-pulse">{{ t('action.loading') }}</p>
     </div>
 
     <div v-else-if="error" class="max-w-md w-full text-center space-y-4">
@@ -133,15 +139,32 @@ const onSubmit = form.handleSubmit(async (values) => {
         class="bg-destructive/10 text-destructive p-8 rounded-2xl border border-destructive/20 shadow-sm"
       >
         <AlertTriangle class="h-12 w-12 mx-auto mb-4" />
-        <h3 class="font-bold text-xl">Item Not Found</h3>
+        <h3 class="font-bold text-xl">{{ t('action.notFound') }}</h3>
         <p class="text-sm opacity-90">
-          This QR code seems invalid or the item was removed.
+          {{ t('action.notFoundDesc') }}
         </p>
       </div>
-      <Button variant="outline" @click="navigateTo('/')">Go Home</Button>
+      <Button variant="outline" @click="navigateTo('/')">{{ t('action.goHome') }}</Button>
     </div>
 
-    <div v-else class="max-w-md w-full space-y-6">
+    <div v-else-if="product" class="max-w-md w-full space-y-6">
+        <!-- Language Switcher -->
+        <div class="flex justify-end">
+            <div class="flex gap-2">
+                <Button 
+                    v-for="l in (locales as any[])"
+                    :key="l.code"
+                    variant="ghost" 
+                    size="sm" 
+                    class="h-8 px-2 text-xs uppercase"
+                    :class="locale === l.code ? 'font-bold bg-black/5' : 'text-muted-foreground'"
+                    @click="setLocale(l.code)"
+                >
+                    {{ l.code }}
+                </Button>
+            </div>
+        </div>
+
       <!-- Main Card -->
       <Card class="border-0 shadow-xl overflow-hidden relative">
         <!-- Status Header Banner -->
@@ -176,20 +199,20 @@ const onSubmit = form.handleSubmit(async (values) => {
             <div
               class="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-sm font-bold tracking-wider uppercase mb-3"
             >
-              <span v-if="isLost">LOST ITEM</span>
-              <span v-else>PROTECTED ITEM</span>
+              <span v-if="isLost">{{ t('status.lost') }}</span>
+              <span v-else>{{ t('status.safe') }}</span>
             </div>
 
             <p
               class="text-white/90 text-sm font-medium flex items-center gap-1"
-              v-if="product.user?.name"
+              v-if="product?.user?.name"
             >
               Owner: {{ product.user.name }}
             </p>
           </div>
         </div>
 
-        <CardContent class="pt-8 pb-8 px-6 space-y-8">
+        <CardContent class="pt-8 pb-8 px-6 space-y-4">
           <!-- Product Description -->
           <div v-if="product.description" class="text-center">
             <p class="text-muted-foreground text-lg leading-relaxed">
@@ -208,10 +231,9 @@ const onSubmit = form.handleSubmit(async (values) => {
               >
                 <MapPin class="h-6 w-6 text-primary" />
               </div>
-              <h3 class="font-semibold text-foreground">Found this item?</h3>
+              <h3 class="font-semibold text-foreground">{{ t('action.foundThis') }}</h3>
               <p class="text-sm text-muted-foreground">
-                If you found this item, you can send a secure message to the
-                owner.
+                {{ t('action.foundDesc') }}
               </p>
             </div>
 
@@ -229,7 +251,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 </div>
                 <div class="relative flex justify-center text-xs uppercase">
                   <span class="bg-background px-2 text-muted-foreground"
-                    >Owner Contact</span
+                    >{{ t('action.contactOwner') }}</span
                   >
                 </div>
               </div>
@@ -267,14 +289,13 @@ const onSubmit = form.handleSubmit(async (values) => {
             v-if="isLost && product"
             class="space-y-6 animate-in slide-in-from-bottom-4 fade-in duration-500"
           >
-            <!-- Owner Message -->
             <div
               v-if="product.lostMessage"
-              class="bg-red-50 dark:bg-red-950/30 border border-red-100 dark:border-red-900/50 rounded-xl p-5 relative"
+              class="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2"
             >
-              <Mail class="absolute top-4 left-4 h-5 w-5 text-red-500/50" />
+              <Mail class="h-6 w-6 text-red-500 mb-1" />
               <p
-                class="text-center font-medium text-lg italic text-red-900 dark:text-red-200 pt-1 px-2"
+                class="text-center font-semibold text-lg text-red-900 leading-relaxed max-w-[90%]"
               >
                 "{{ product.lostMessage }}"
               </p>
@@ -294,7 +315,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <div class="bg-white/20 p-2 rounded-full">
                   <Phone class="h-6 w-6" />
                 </div>
-                <span class="text-xl font-bold tracking-wide">Call Owner</span>
+                <span class="text-xl font-bold tracking-wide">{{ t('action.callOwner') }}</span>
               </a>
 
               <!-- Email -->
@@ -306,13 +327,13 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <div class="bg-white/20 p-2 rounded-full">
                   <Mail class="h-6 w-6" />
                 </div>
-                <span class="text-xl font-bold tracking-wide">Email Owner</span>
+                <span class="text-xl font-bold tracking-wide">{{ t('action.emailOwner') }}</span>
               </a>
             </div>
           </div>
 
           <!-- Report Action Area -->
-          <div v-if="!showReportForm && !reportSuccess" class="pt-2">
+          <div v-if="!showReportForm && !reportSuccess">
             <Button
               size="lg"
               class="w-full h-14 text-lg font-bold rounded-xl shadow-md transition-all hover:scale-[1.02]"
@@ -325,7 +346,7 @@ const onSubmit = form.handleSubmit(async (values) => {
               @click="showReportForm = true"
             >
               <MapPin class="mr-2 h-5 w-5" />
-              I Found This Item
+              {{ t('action.sendMessage') }}
             </Button>
           </div>
 
@@ -335,7 +356,7 @@ const onSubmit = form.handleSubmit(async (values) => {
             class="space-y-4 animate-in fade-in slide-in-from-bottom-8"
           >
             <div class="text-center pb-2">
-              <h3 class="font-bold text-lg">Send Message</h3>
+              <h3 class="font-bold text-lg">{{ t('action.sendMessage') }}</h3>
               <p class="text-xs text-muted-foreground">
                 Notify the owner securely
               </p>
@@ -346,8 +367,8 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <FormItem>
                   <FormControl>
                     <Input
-                      class="h-12 rounded-lg bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background transition-all"
-                      placeholder="Your Phone or Email"
+                      class="h-12 rounded-lg bg-background border shadow-sm focus-visible:ring-1 focus-visible:ring-primary transition-all"
+                      :placeholder="t('action.yourContactPlaceholder')"
                       v-bind="componentField"
                     />
                   </FormControl>
@@ -359,8 +380,8 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <FormItem>
                   <FormControl>
                     <Textarea
-                      class="min-h-[100px] rounded-lg bg-muted/50 border-0 focus-visible:ring-1 focus-visible:ring-primary focus-visible:bg-background transition-all resize-none"
-                      placeholder="Where did you find it?"
+                      class="min-h-[100px] rounded-lg bg-background border shadow-sm focus-visible:ring-1 focus-visible:ring-primary transition-all resize-none"
+                      :placeholder="t('action.messagePlaceholder')"
                       v-bind="componentField"
                     />
                   </FormControl>
@@ -372,17 +393,17 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <Button
                   type="button"
                   variant="ghost"
-                  class="flex-1 h-12 rounded-lg hover:bg-muted"
+                  class="flex-1 h-12 rounded-lg border hover:bg-muted"
                   @click="showReportForm = false"
                 >
-                  Cancel
+                  {{ t('action.cancel') }}
                 </Button>
                 <Button
                   type="submit"
                   class="flex-[2] h-12 rounded-lg font-bold shadow-md"
                   :disabled="isSubmitting"
                 >
-                  {{ isSubmitting ? "Sending..." : "Send Report" }}
+                  {{ isSubmitting ? t('action.sending') : t('action.send') }}
                 </Button>
               </div>
             </form>
@@ -398,11 +419,11 @@ const onSubmit = form.handleSubmit(async (values) => {
             >
               <CheckCircle class="h-10 w-10" />
             </div>
-            <h3 class="text-2xl font-bold text-foreground">Report Sent!</h3>
+            <h3 class="text-2xl font-bold text-foreground">{{ t('action.success') }}</h3>
             <p
               class="text-muted-foreground mt-2 max-w-[200px] mx-auto leading-normal"
             >
-              Thanks for being a good samaritan. The owner has been notified.
+              {{ t('action.successDesc') }}
             </p>
           </div>
         </CardContent>
@@ -417,7 +438,7 @@ const onSubmit = form.handleSubmit(async (values) => {
           target="_blank"
           class="text-xs font-semibold tracking-wider text-muted-foreground uppercase hover:text-primary transition-colors"
         >
-          Powered by Anti-Lost QR
+          {{ t('action.poweredBy') }}
         </a>
       </div>
     </div>
