@@ -26,5 +26,15 @@ export default defineEventHandler(async (event) => {
         }
     })
 
+    // Update session with new user data so Header displays updated name
+    await setUserSession(event, {
+        user: {
+            id: dbUser.id,
+            email: dbUser.email!,
+            name: dbUser.name,
+            image: dbUser.image
+        }
+    })
+
     return dbUser
 })

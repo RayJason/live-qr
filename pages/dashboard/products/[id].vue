@@ -30,6 +30,7 @@ import {
   ArrowLeft,
   Trash2,
   ExternalLink,
+  Loader2,
 } from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductQRCard from "@/components/dashboard/ProductQRCard.vue";
@@ -164,89 +165,89 @@ const deleteProduct = async () => {
 </script>
 
 <template>
-  <div class="container py-10 max-w-4xl">
-    <div class="mb-6">
-      <Button variant="ghost" class="pl-0" @click="router.back()">
-        <ArrowLeft class="mr-2 h-4 w-4" />
-        Back to Dashboard
-      </Button>
+  <div class="container py-6 max-w-7xl mx-auto space-y-8">
+    <!-- Header Section -->
+    <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2 text-muted-foreground text-sm cursor-pointer hover:text-foreground transition-colors" @click="router.back()">
+          <ArrowLeft class="h-4 w-4" />
+          <span>{{ t('action.back') }}</span>
+        </div>
+        <div class="flex items-center gap-3">
+            <h1 class="text-3xl font-bold tracking-tight">{{ product?.name || t('dashboard.productDetails') }}</h1>
+            <div v-if="product" :class="[
+              'px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border',
+              isLost
+                ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50'
+                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50'
+            ]">
+              {{ isLost ? t('status.lost') : t('status.active') }}
+            </div>
+        </div>
+        <p class="text-muted-foreground max-w-2xl">
+          {{ t('dashboard.productDetailsDesc') }}
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+         <Button variant="outline" as-child>
+           <a :href="`/s/${productId}`" target="_blank" class="flex items-center gap-2">
+             <ExternalLink class="h-4 w-4" />
+             {{ t('dashboard.viewPublicPage') }}
+           </a>
+         </Button>
+      </div>
     </div>
 
-    <div v-if="pending" class="grid gap-6 md:grid-cols-2">
-      <div class="space-y-6">
+    <!-- Loading State -->
+    <div v-if="pending" class="grid gap-6 lg:grid-cols-3">
+      <div class="lg:col-span-2 space-y-6">
         <Card>
           <CardHeader>
             <Skeleton class="h-8 w-48 mb-2" />
-            <Skeleton class="h-4 w-64" />
+            <Skeleton class="h-4 w-full max-w-sm" />
           </CardHeader>
-          <CardContent class="space-y-4">
-            <div class="space-y-2">
-              <Skeleton class="h-4 w-24" />
-              <Skeleton class="h-10 w-full" />
-            </div>
-            <div class="space-y-2">
-              <Skeleton class="h-4 w-24" />
-              <Skeleton class="h-20 w-full" />
-            </div>
-            <Skeleton class="h-32 w-full rounded-lg" />
-            <Skeleton class="h-32 w-full rounded-lg" />
+          <CardContent class="space-y-6">
             <Skeleton class="h-10 w-full" />
-            <div class="flex justify-end pt-4">
-              <Skeleton class="h-10 w-32" />
-            </div>
+            <Skeleton class="h-24 w-full" />
           </CardContent>
+        </Card>
+        <Card>
+           <CardContent class="h-48" />
         </Card>
       </div>
       <div class="space-y-6">
+        <Skeleton class="h-[400px] w-full rounded-xl" />
+        <Skeleton class="h-[200px] w-full rounded-xl" />
+      </div>
+    </div>
+
+    <!-- Error State -->
+    <div v-else-if="error" class="p-8 text-center rounded-lg border border-destructive/20 bg-destructive/5 text-destructive">
+      <p class="font-medium">Error loading product</p>
+      <p class="text-sm opacity-80 mt-1">{{ error.message }}</p>
+      <Button variant="outline" class="mt-4 border-destructive/30 hover:bg-destructive/10" @click="refresh">
+        {{ t('action.retry') }}
+      </Button>
+    </div>
+
+    <!-- Main Content -->
+    <form v-else @submit="onSubmit" class="grid gap-8 lg:grid-cols-3 items-start">
+      
+      <!-- Left Column: Settings Form -->
+      <div class="lg:col-span-2 space-y-8">
+        
+        <!-- Basic Info Card -->
         <Card>
           <CardHeader>
-            <Skeleton class="h-8 w-32 mb-2" />
-            <Skeleton class="h-4 w-48" />
-          </CardHeader>
-          <CardContent class="flex flex-col items-center">
-            <Skeleton class="h-[232px] w-[232px] rounded-lg" />
-            <div class="mt-4 text-center w-full flex flex-col items-center">
-              <Skeleton class="h-4 w-32 mb-1" />
-              <Skeleton class="h-3 w-48" />
-            </div>
-          </CardContent>
-          <CardFooter class="justify-center">
-            <Skeleton class="h-10 w-28" />
-          </CardFooter>
-        </Card>
-        <Card>
-          <CardHeader>
-            <Skeleton class="h-6 w-32" />
+            <CardTitle>{{ t('dashboard.basicInfo') }}</CardTitle>
+            <CardDescription>{{ t('dashboard.basicInfoDesc') }}</CardDescription>
           </CardHeader>
           <CardContent class="space-y-4">
-            <Skeleton class="h-16 w-full" />
-            <Skeleton class="h-16 w-full" />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-
-    <div v-else-if="error" class="text-destructive">
-      Error loading product: {{ error.message }}
-    </div>
-
-    <div v-else class="grid gap-6 md:grid-cols-2">
-      <!-- Settings Column -->
-      <div class="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>{{ t('dashboard.productDetails') }}</CardTitle>
-            <CardDescription
-              >{{ t('dashboard.productDetailsDesc') }}</CardDescription
-            >
-          </CardHeader>
-          <CardContent>
-            <form @submit="onSubmit" class="space-y-4">
-              <FormField v-slot="{ componentField }" name="name">
+             <FormField v-slot="{ componentField }" name="name">
                 <FormItem>
-                  <FormLabel>{{ t('dashboard.itemName') }}</FormLabel>
-                  <FormControl>
-                    <Input v-bind="componentField" />
+                  <FormLabel>{{ t('dashboard.itemName') }} <span class="text-destructive">*</span></FormLabel>
+                   <FormControl>
+                    <Input v-bind="componentField" :placeholder="t('placeholder.itemName')" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -255,50 +256,53 @@ const deleteProduct = async () => {
               <FormField v-slot="{ componentField }" name="description">
                 <FormItem>
                   <FormLabel>{{ t('dashboard.description') }}</FormLabel>
-                  <FormControl>
-                    <Textarea v-bind="componentField" />
+                   <FormControl>
+                    <Textarea 
+                      v-bind="componentField" 
+                      class="resize-y min-h-[100px]" 
+                      :placeholder="t('placeholder.itemDesc')"
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               </FormField>
+          </CardContent>
+        </Card>
 
-              <div class="p-4 border rounded-lg bg-muted/50 space-y-4">
-                <div class="flex items-center justify-between">
-                  <Label class="text-base font-medium leading-none"
-                    >{{ t('dashboard.lostMode') }}</Label
-                  >
-                  <FormField v-slot="{ componentField }" name="status">
-                    <Switch
-                      :model-value="!!componentField.modelValue"
-                      @update:model-value="componentField['onUpdate:modelValue']"
-                    />
-                  </FormField>
+        <!-- Status & Recovery Card -->
+        <Card class="overflow-hidden transition-all duration-300" :class="isLost ? 'border-red-200 dark:border-red-900/50 shadow-sm' : ''">
+           <CardHeader :class="isLost ? 'bg-red-50/50 dark:bg-red-900/10' : ''">
+            <div class="flex items-center justify-between">
+                <div class="space-y-1">
+                    <CardTitle class="flex items-center gap-2">
+                        {{ t('dashboard.deviceStatus') }}
+                    </CardTitle>
+                    <CardDescription>{{ t('dashboard.deviceStatusDesc') }}</CardDescription>
                 </div>
-                <p class="text-sm text-muted-foreground">
-                  {{ t('dashboard.lostModeDesc') }}
-                </p>
-
-                <template v-if="isLost">
-                  <FormField v-slot="{ componentField }" name="lostMessage">
-                    <FormItem>
-                      <FormLabel>{{ t('dashboard.lostMessage') }}</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Please return to..."
-                          v-bind="componentField"
+                 <FormField v-slot="{ componentField }" name="status">
+                    <div class="flex items-center gap-2">
+                         <span class="text-sm font-medium" :class="isLost ? 'text-red-600 dark:text-red-400' : 'text-muted-foreground'">
+                            {{ isLost ? t('status.lostModeOn') : t('status.normalMode') }}
+                         </span>
+                         <Switch
+                          :model-value="!!componentField.modelValue"
+                          @update:model-value="componentField['onUpdate:modelValue']"
+                          class="data-[state=checked]:bg-red-600"
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
+                    </div>
                   </FormField>
-                  <FormField v-slot="{ componentField }" name="contactEmail">
+            </div>
+          </CardHeader>
+          
+          <CardContent class="p-0">
+             <!-- Lost Mode Fields (Conditional) -->
+             <div v-if="isLost" class="p-6 space-y-6 bg-red-50/20 animate-in slide-in-from-top-2 duration-300">
+                <div class="grid gap-4 md:grid-cols-2">
+                    <FormField v-slot="{ componentField }" name="contactEmail">
                     <FormItem>
                       <FormLabel>{{ t('dashboard.contactEmail') }}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="your@email.com"
-                          v-bind="componentField"
-                        />
+                        <Input placeholder="your@email.com" v-bind="componentField" class="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -307,46 +311,62 @@ const deleteProduct = async () => {
                     <FormItem>
                       <FormLabel>{{ t('dashboard.contactPhone') }}</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="+1 234 567 8900"
-                          v-bind="componentField"
-                        />
+                        <Input placeholder="+1 234 567 8900" v-bind="componentField" class="bg-background" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   </FormField>
-                </template>
-              </div>
+                </div>
+                 <FormField v-slot="{ componentField }" name="lostMessage">
+                    <FormItem>
+                      <FormLabel>{{ t('dashboard.lostMessage') }}</FormLabel>
+                      <FormControl>
+                        <Input :placeholder="t('placeholder.lostMessage')" v-bind="componentField" class="bg-background" />
+                      </FormControl>
+                       <FormDescription>{{ t('dashboard.lostMessageHelp') }}</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  </FormField>
+             </div>
 
-              <div
-                class="p-4 border rounded-lg bg-green-50 dark:bg-green-900/10 space-y-4"
-              >
-                <div class="flex items-center justify-between">
-                  <Label
-                    class="text-base font-medium leading-none text-green-700 dark:text-green-400"
-                    >{{ t('dashboard.showContactSafe') }}</Label
-                  >
-                  <FormField
-                    v-slot="{ componentField }"
-                    name="showContactWhenSafe"
-                  >
+             <div v-else class="px-6 py-4 bg-muted/20 text-sm text-muted-foreground flex items-center justify-center italic">
+                 {{ t('dashboard.normalModeDesc') }}
+             </div>
+
+             <!-- Safe Mode Settings Separator -->
+             <div class="border-t"></div>
+
+             <!-- Safe Mode Settings -->
+             <div class="p-6 flex items-center justify-between">
+                <div class="space-y-0.5">
+                    <Label class="text-base">{{ t('dashboard.showContactSafe') }}</Label>
+                    <p class="text-sm text-muted-foreground">
+                        {{ t('dashboard.showContactSafeDesc') }}
+                    </p>
+                </div>
+                 <FormField v-slot="{ componentField }" name="showContactWhenSafe">
                     <Switch
                       :model-value="!!componentField.modelValue"
                       @update:model-value="componentField['onUpdate:modelValue']"
                     />
                   </FormField>
-                </div>
-                <p class="text-sm text-muted-foreground">
-                  {{ t('dashboard.showContactSafeDesc') }}
-                </p>
-              </div>
+             </div>
+          </CardContent>
+        </Card>
 
-              <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
+        <!-- Integrations Card -->
+        <Card>
+            <CardHeader>
+                <CardTitle>{{ t('dashboard.integrations') }}</CardTitle>
+                <CardDescription>{{ t('dashboard.integrationsDesc') }}</CardDescription>
+            </CardHeader>
+             <CardContent>
+                <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
                 <FormItem>
                   <FormLabel>{{ t('dashboard.feishuWebhook') }}</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="https://open.feishu.cn/..."
+                      placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..."
                       v-bind="componentField"
                     />
                   </FormControl>
@@ -356,94 +376,95 @@ const deleteProduct = async () => {
                   <FormMessage />
                 </FormItem>
               </FormField>
-
-              <div class="flex justify-end pt-4">
-                <Button type="submit" :disabled="isSaving">
-                  <Loader2
-                    v-if="isSaving"
-                    class="mr-2 h-4 w-4 animate-spin"
-                  />
-                  {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
+             </CardContent>
         </Card>
 
-        <Card class="border-destructive">
-          <CardHeader>
-            <CardTitle class="text-destructive">{{ t('dashboard.deleteConfirmTitle') || 'Danger Zone' }}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p class="text-sm text-muted-foreground mb-4">
-               {{ t('dashboard.deleteConfirmDesc') }}
-            </p>
-            <AlertDialog>
-              <AlertDialogTrigger as-child>
-                <Button variant="destructive">
-                  <Trash2 class="mr-2 h-4 w-4" />
-                  {{ t('action.delete') }}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{{ t('dashboard.deleteConfirmTitle') }}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {{ t('dashboard.deleteConfirmDesc') }}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>{{ t('action.cancel') }}</AlertDialogCancel>
-                  <AlertDialogAction
-                    @click="deleteProduct"
-                    class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                  >
-                    {{ t('action.delete') }}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </CardContent>
-        </Card>
+        <!-- Action Bar (Sticky Bottom on Mobile, or Static) -->
+        <div class="flex items-center justify-end gap-4 pt-4">
+             <Button type="button" variant="outline" @click="router.back()" :disabled="isSaving">
+                {{ t('action.cancel') }}
+            </Button>
+            <Button type="submit" :disabled="isSaving" class="min-w-[120px]">
+                <Loader2 v-if="isSaving" class="mr-2 h-4 w-4 animate-spin" />
+                {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
+            </Button>
+        </div>
+
       </div>
 
-      <!-- QR & Reports Column -->
+      <!-- Right Column: Meta & Danger Zone -->
       <div class="space-y-6">
+        
+        <!-- QR Code Card -->
         <ProductQRCard :productId="productId" />
 
+        <!-- Reports Card -->
         <Card>
-          <CardHeader>
-            <CardTitle>{{ t('dashboard.reports') }}</CardTitle>
+          <CardHeader class="pb-3">
+            <CardTitle class="text-lg">{{ t('dashboard.recentReports') }}</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div
-              v-if="product?.reports && product.reports.length > 0"
-              class="space-y-4"
-            >
-              <div
-                v-for="report in product.reports"
-                :key="report.id"
-                class="border-b pb-4 last:border-0"
-              >
-                <div class="flex justify-between">
-                  <span class="font-medium text-sm">{{
-                    report.finderContact || "Anonymous"
-                  }}</span>
-                  <span class="text-xs text-muted-foreground">{{
-                    new Date(report.createdAt).toLocaleDateString()
-                  }}</span>
+           <CardContent class="px-2">
+            <div v-if="product?.reports && product.reports.length > 0" class="space-y-1">
+               <div v-for="report in product.reports" :key="report.id" class="p-3 rounded-lg hover:bg-muted/50 transition-colors text-sm">
+                   <div class="flex justify-between items-start mb-1">
+                       <span class="font-medium truncate max-w-[120px]">{{ report.finderContact || t('report.anonymous') }}</span>
+                       <span class="text-xs text-muted-foreground whitespace-nowrap">{{ new Date(report.createdAt).toLocaleDateString() }}</span>
+                   </div>
+                   <p class="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
+                       {{ report.message }}
+                   </p>
+               </div>
+            </div>
+             <div v-else class="flex flex-col items-center justify-center py-8 text-center text-muted-foreground">
+                <div class="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
+                     <span class="text-xl">📭</span>
                 </div>
-                <p class="text-sm mt-1 text-muted-foreground">
-                  {{ report.message }}
-                </p>
-              </div>
+                <p class="text-sm font-medium">{{ t('dashboard.noReports') }}</p>
+                <p class="text-xs opacity-70 mt-1">{{ t('dashboard.noReportsDesc') }}</p>
             </div>
-            <div v-else class="text-sm text-muted-foreground text-center py-4">
-              {{ t('dashboard.noReports') }}
-            </div>
-          </CardContent>
+           </CardContent>
         </Card>
+
+        <!-- Danger Zone -->
+        <Card class="border-destructive/30 shadow-none">
+            <CardHeader class="pb-3">
+                <CardTitle class="text-base text-destructive flex items-center gap-2">
+                    <Trash2 class="h-4 w-4" />
+                    {{ t('dashboard.dangerZone') }}
+                </CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p class="text-xs text-muted-foreground mb-4 leading-relaxed">
+                    {{ t('dashboard.deleteProductWarning') }}
+                </p>
+                <AlertDialog>
+                  <AlertDialogTrigger as-child>
+                    <Button variant="destructive" size="sm" class="w-full">
+                      {{ t('action.deleteProduct') }}
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{{ t('dashboard.deleteConfirmTitle') }}</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        {{ t('dashboard.deleteConfirmDesc') }}
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{{ t('action.cancel') }}</AlertDialogCancel>
+                      <AlertDialogAction
+                        @click="deleteProduct"
+                        class="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {{ t('action.delete') }}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+            </CardContent>
+        </Card>
+
       </div>
-    </div>
+    </form>
   </div>
 </template>

@@ -1,7 +1,10 @@
 {
     "status": {
         "lost": "LOST ITEM",
-        "safe": "SAFE ITEM"
+        "safe": "SAFE ITEM",
+        "active": "ACTIVE",
+        "lostModeOn": "Lost Mode On",
+        "normalMode": "Normal Mode"
     },
     "action": {
         "sendMessage": "Message Owner",
@@ -26,15 +29,31 @@
         "successDesc": "Thanks for being a good samaritan. The owner has been notified.",
         "delete": "Delete Product",
         "saveChanges": "Save Changes",
+        "saving": "Saving...",
         "copyLink": "Copy Link",
         "download": "Download Image",
-        "print": "Print"
+        "print": "Print",
+        "back": "Back",
+        "refresh": "Refresh",
+        "retry": "Retry",
+        "deleteProduct": "Delete Product"
     },
     "dashboard": {
         "manageDescription": "Manage your product details and QR code",
         "viewPublicPage": "View Public Page",
         "productDetails": "Product Details",
         "productDetailsDesc": "Update information about your item.",
+        "basicInfo": "Basic Information",
+        "basicInfoDesc": "Manage the core details of your product.",
+        "deviceStatus": "Device Status",
+        "deviceStatusDesc": "Control the lost/found status of your device.",
+        "integrations": "Integrations",
+        "integrationsDesc": "Connect with third-party services.",
+        "recentReports": "Recent Reports",
+        "noReportsDesc": "When someone scans your lost QR code, their message will appear here.",
+        "dangerZone": "Danger Zone",
+        "deleteProductWarning": "Once you delete a product, there is no going back. Please be certain.",
+        "normalModeDesc": "Your item is marked as safe. The public page shows standard info.",
         "itemName": "Item Name",
         "description": "Description",
         "contactEmail": "Contact Email",
@@ -46,6 +65,7 @@
         "lostMode": "Lost Mode",
         "lostModeDesc": "Mark item as lost. This will show a warning on the public page.",
         "lostMessage": "Lost Message",
+        "lostMessageHelp": "Display a custom message on the public page (e.g. 'Please return to...').",
         "showContactSafe": "Show Contact When Safe",
         "showContactSafeDesc": "Allow finders to see contact info even when item is not marked lost.",
         "deleteConfirmTitle": "Are you sure?",
@@ -60,5 +80,13 @@
         "printTitle": "Print QR Code",
         "printInstruction": "Please print the downloaded image.",
         "deleteSuccess": "Product deleted"
+    },
+    "report": {
+        "anonymous": "Anonymous"
+    },
+    "placeholder": {
+        "itemName": "e.g. My MacBook Pro",
+        "itemDesc": "A brief description of the item...",
+        "lostMessage": "Please return to..."
     }
 }
