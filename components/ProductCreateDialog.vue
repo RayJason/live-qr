@@ -26,13 +26,17 @@ import { toast } from "vue-sonner";
 import { Plus } from "lucide-vue-next";
 
 const emit = defineEmits(["product-created"]);
+const { t } = useI18n();
 
 const isOpen = ref(false);
 const isLoading = ref(false);
 
 const formSchema = toTypedSchema(
   z.object({
-    name: z.string().min(2).max(50),
+    name: z
+      .string()
+      .min(2, t("validation.productNameMin"))
+      .max(50, t("validation.productNameMax")),
     description: z.string().optional(),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
@@ -65,16 +69,16 @@ const onSubmit = form.handleSubmit(async (values) => {
     });
 
     if (error.value) {
-      toast.error("Failed to create product");
+      toast.error(t("productDialog.createError"));
       return;
     }
 
-    toast.success("Product created successfully");
+    toast.success(t("productDialog.createSuccess"));
     isOpen.value = false;
     emit("product-created", data.value);
     form.resetForm();
   } catch (err) {
-    toast.error("An error occurred");
+    toast.error(t("productDialog.unexpectedError"));
     console.error(err);
   } finally {
     isLoading.value = false;
@@ -87,25 +91,25 @@ const onSubmit = form.handleSubmit(async (values) => {
     <DialogTrigger as-child>
       <Button>
         <Plus class="mr-2 h-4 w-4" />
-        Create New Product
+        {{ t("productDialog.trigger") }}
       </Button>
     </DialogTrigger>
     <DialogContent class="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>Create Product</DialogTitle>
+        <DialogTitle>{{ t("productDialog.title") }}</DialogTitle>
         <DialogDescription>
-          Add a new item you want to protect.
+          {{ t("productDialog.description") }}
         </DialogDescription>
       </DialogHeader>
       <form @submit="onSubmit">
         <div class="grid gap-4 py-4">
           <FormField v-slot="{ componentField }" name="name">
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>{{ t("productDialog.nameLabel") }}</FormLabel>
               <FormControl>
                 <Input
                   type="text"
-                  placeholder="Snowboard, Camera, Keys..."
+                  :placeholder="t('productDialog.namePlaceholder')"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -115,10 +119,10 @@ const onSubmit = form.handleSubmit(async (values) => {
 
           <FormField v-slot="{ componentField }" name="description">
             <FormItem>
-              <FormLabel>Description (Optional)</FormLabel>
+              <FormLabel>{{ t("productDialog.descriptionLabel") }}</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Black Burton snowboard..."
+                  :placeholder="t('productDialog.descriptionPlaceholder')"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -128,11 +132,11 @@ const onSubmit = form.handleSubmit(async (values) => {
 
           <FormField v-slot="{ componentField }" name="contactEmail">
             <FormItem>
-              <FormLabel>Email (Optional)</FormLabel>
+              <FormLabel>{{ t("productDialog.emailLabel") }}</FormLabel>
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="your@email.com"
+                  :placeholder="t('productDialog.emailPlaceholder')"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -142,11 +146,11 @@ const onSubmit = form.handleSubmit(async (values) => {
 
           <FormField v-slot="{ componentField }" name="contactPhone">
             <FormItem>
-              <FormLabel>Phone (Optional)</FormLabel>
+              <FormLabel>{{ t("productDialog.phoneLabel") }}</FormLabel>
               <FormControl>
                 <Input
                   type="tel"
-                  placeholder="+1 234 567 8900"
+                  :placeholder="t('productDialog.phonePlaceholder')"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -156,10 +160,10 @@ const onSubmit = form.handleSubmit(async (values) => {
 
           <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
             <FormItem>
-              <FormLabel>Feishu Webhook URL (Optional)</FormLabel>
+              <FormLabel>{{ t("productDialog.webhookLabel") }}</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="https://open.feishu.cn/..."
+                  :placeholder="t('productDialog.webhookPlaceholder')"
                   v-bind="componentField"
                 />
               </FormControl>
@@ -169,7 +173,7 @@ const onSubmit = form.handleSubmit(async (values) => {
         </div>
         <DialogFooter>
           <Button type="submit" :disabled="isLoading">
-            {{ isLoading ? "Creating..." : "Create Product" }}
+            {{ isLoading ? t("productDialog.submitting") : t("productDialog.submit") }}
           </Button>
         </DialogFooter>
       </form>

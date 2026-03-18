@@ -35,15 +35,16 @@ const emit = defineEmits<{
   saved: [name: string]
 }>()
 
+const { t } = useI18n()
 const open = defineModel<boolean>('open', { default: false })
 const isLoading = ref(false)
 const pending = ref(false)
 const profile = ref<{ id: string; name: string; email: string; phone: string | null; image: string | null; feishuWebhookUrl: string | null } | null>(null)
 
 const formSchema = toTypedSchema(z.object({
-  name: z.string().min(1, 'Please enter your name').max(50),
-  phone: z.string().max(20).optional(),
-  feishuWebhookUrl: z.string().url('Invalid URL').optional().or(z.literal('')),
+  name: z.string().min(1, t('validation.profileNameRequired')).max(50, t('validation.profileNameMax')),
+  phone: z.string().max(20, t('validation.phoneMax')).optional(),
+  feishuWebhookUrl: z.string().url(t('validation.invalidUrl')).optional().or(z.literal('')),
 }))
 
 const form = useForm({
@@ -57,7 +58,7 @@ const loadProfile = async () => {
   try {
     profile.value = await $fetch<typeof profile.value>('/api/profile')
   } catch (e) {
-    toast.error('Failed to load profile')
+    toast.error(t('profile.loadError'))
   } finally {
     pending.value = false
   }
@@ -94,10 +95,10 @@ const onSubmit = form.handleSubmit(async (values) => {
         // Emit event to notify parent to update session
         emit('saved', values.name)
         
-        toast.success('Settings saved')
+        toast.success(t('profile.saveSuccess'))
         open.value = false
     } catch (e) {
-        toast.error('Failed to save, please try again')
+        toast.error(t('profile.saveError'))
     } finally {
         isLoading.value = false
     }
@@ -110,15 +111,15 @@ const onSubmit = form.handleSubmit(async (values) => {
       <slot>
         <Button variant="ghost" size="sm">
           <Settings class="mr-2 h-4 w-4" />
-          Profile Settings
+          {{ t('header.profileSettings') }}
         </Button>
       </slot>
     </DialogTrigger>
     <DialogContent class="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>Profile Settings</DialogTitle>
+        <DialogTitle>{{ t('profile.title') }}</DialogTitle>
         <DialogDescription>
-          Set your default contact information for lost items.
+          {{ t('profile.description') }}
         </DialogDescription>
       </DialogHeader>
       
@@ -129,15 +130,15 @@ const onSubmit = form.handleSubmit(async (values) => {
       <form v-else @submit="onSubmit" class="space-y-4 py-4">
         <FormField v-slot="{ componentField }" name="name">
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>{{ t('profile.nameLabel') }}</FormLabel>
             <FormControl>
               <div class="relative">
                 <User class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input class="pl-10" placeholder="Your name" v-bind="componentField" />
+                <Input class="pl-10" :placeholder="t('profile.namePlaceholder')" v-bind="componentField" />
               </div>
             </FormControl>
             <FormDescription>
-              This name will be displayed on your item's public page to help finders identify the owner.
+              {{ t('profile.nameDescription') }}
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -145,15 +146,15 @@ const onSubmit = form.handleSubmit(async (values) => {
 
         <FormField v-slot="{ componentField }" name="phone">
           <FormItem>
-            <FormLabel>Phone</FormLabel>
+            <FormLabel>{{ t('profile.phoneLabel') }}</FormLabel>
             <FormControl>
               <div class="relative">
                 <Phone class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input class="pl-10" placeholder="Your contact phone" v-bind="componentField" />
+                <Input class="pl-10" :placeholder="t('profile.phonePlaceholder')" v-bind="componentField" />
               </div>
             </FormControl>
             <FormDescription>
-              Default contact for lost items
+              {{ t('profile.phoneDescription') }}
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -161,18 +162,18 @@ const onSubmit = form.handleSubmit(async (values) => {
 
         <FormField v-slot="{ componentField }" name="feishuWebhookUrl">
           <FormItem>
-            <FormLabel>Feishu Webhook URL</FormLabel>
+            <FormLabel>{{ t('profile.webhookLabel') }}</FormLabel>
             <FormControl>
               <div class="relative">
                 <div class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 flex items-center justify-center">
                     <!-- Simple icon placeholder or use Link icon -->
                     <span class="text-xs font-bold text-muted-foreground">F</span>
                 </div>
-                <Input class="pl-10" placeholder="https://open.feishu.cn/open-apis/bot/v2/hook/..." v-bind="componentField" />
+                <Input class="pl-10" :placeholder="t('profile.webhookPlaceholder')" v-bind="componentField" />
               </div>
             </FormControl>
             <FormDescription>
-              Receive notifications when your items are scanned or reported.
+              {{ t('profile.webhookDescription') }}
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -182,19 +183,19 @@ const onSubmit = form.handleSubmit(async (values) => {
           <div class="flex items-center gap-3">
             <Mail class="h-4 w-4 text-muted-foreground" />
             <div class="flex-1">
-              <div class="text-sm font-medium">Email</div>
+              <div class="text-sm font-medium">{{ t('profile.emailLabel') }}</div>
               <div class="text-sm text-muted-foreground">{{ profile?.email }}</div>
             </div>
           </div>
           <p class="mt-2 text-xs text-muted-foreground">
-             Managed via Google Sign-In
+             {{ t('profile.emailManagedByGoogle') }}
           </p>
         </div>
 
         <DialogFooter>
           <Button type="submit" :disabled="isLoading">
             <Loader2 v-if="isLoading" class="mr-2 h-4 w-4 animate-spin" />
-            {{ isLoading ? 'Saving...' : 'Save' }}
+            {{ isLoading ? t('profile.submitting') : t('profile.submit') }}
           </Button>
         </DialogFooter>
       </form>

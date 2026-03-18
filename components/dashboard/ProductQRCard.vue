@@ -31,20 +31,20 @@ const qrDotsType = ref<DotType>("rounded");
 const qrCornerSquareType = ref<CornerSquareType>("extra-rounded");
 const qrCornerDotType = ref<CornerDotType>("dot");
 
-const dotTypes = [
-  { value: "square", label: "Square" },
-  { value: "dots", label: "Dots" },
-  { value: "rounded", label: "Rounded" },
-  { value: "classy", label: "Classy" },
-  { value: "classy-rounded", label: "Classy R" },
-  { value: "extra-rounded", label: "Extra R" },
-];
+const dotTypes = computed(() => [
+  { value: "square", label: t("qr.square") },
+  { value: "dots", label: t("qr.dots") },
+  { value: "rounded", label: t("qr.rounded") },
+  { value: "classy", label: t("qr.classy") },
+  { value: "classy-rounded", label: t("qr.classyRounded") },
+  { value: "extra-rounded", label: t("qr.extraRounded") },
+]);
 
-const cornerSquareTypes = [
-  { value: "square", label: "Square" },
-  { value: "extra-rounded", label: "Rounded" },
-  { value: "dot", label: "Dot" },
-];
+const cornerSquareTypes = computed(() => [
+  { value: "square", label: t("qr.square") },
+  { value: "extra-rounded", label: t("qr.rounded") },
+  { value: "dot", label: t("qr.dot") },
+]);
 
 const qrCodeUrl = computed(() => {
   if (import.meta.client) {
@@ -64,10 +64,10 @@ const copyQrImage = () => {
     if (success) {
       toast.success(t('dashboard.imageDownloaded'));
     } else {
-      toast.error("QR Code not ready");
+      toast.error(t("qr.notReady"));
     }
   } else {
-    toast.error("QR Code component not found");
+    toast.error(t("qr.missingComponent"));
   }
 };
 </script>
@@ -100,7 +100,7 @@ const copyQrImage = () => {
       <!-- Customization Controls -->
       <div class="w-full space-y-4">
         <div class="space-y-2">
-          <Label class="text-xs font-semibold uppercase text-muted-foreground">Dots Style</Label>
+          <Label class="text-xs font-semibold uppercase text-muted-foreground">{{ t("qr.dotsStyle") }}</Label>
           <div class="flex flex-wrap gap-2">
             <Button
               v-for="type in dotTypes"
@@ -117,7 +117,7 @@ const copyQrImage = () => {
         </div>
 
         <div class="space-y-2">
-          <Label class="text-xs font-semibold uppercase text-muted-foreground">Corner Style</Label>
+          <Label class="text-xs font-semibold uppercase text-muted-foreground">{{ t("qr.cornerStyle") }}</Label>
           <div class="flex flex-wrap gap-2">
             <Button
               v-for="type in cornerSquareTypes"

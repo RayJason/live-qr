@@ -14,6 +14,7 @@ import { Settings, LogOut } from 'lucide-vue-next'
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue'
 
 const { loggedIn, user, clear, fetch: fetchSession } = useUserSession()
+const { t } = useI18n()
 
 const profileDialogOpen = ref(false)
 
@@ -46,11 +47,11 @@ const userInitials = computed(() => {
     <div class="container flex h-14 items-center">
       <div class="mr-4 hidden md:flex">
         <NuxtLink to="/" class="mr-6 flex items-center space-x-2">
-          <span class="hidden font-bold sm:inline-block">Anti-Lost QR</span>
+          <span class="hidden font-bold sm:inline-block">{{ t('header.brand') }}</span>
         </NuxtLink>
         <nav class="flex items-center space-x-6 text-sm font-medium">
           <NuxtLink to="/dashboard" class="transition-colors hover:text-foreground/80 text-foreground/60">
-            Dashboard
+            {{ t('header.dashboard') }}
           </NuxtLink>
         </nav>
       </div>
@@ -82,12 +83,12 @@ const userInitials = computed(() => {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem @click="openProfileSettings" class="cursor-pointer">
                     <Settings class="mr-2 h-4 w-4" />
-                    <span>Profile Settings</span>
+                    <span>{{ t('header.profileSettings') }}</span>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem @click="handleLogout" class="cursor-pointer text-destructive focus:text-destructive">
                     <LogOut class="mr-2 h-4 w-4" />
-                    <span>Sign Out</span>
+                    <span>{{ t('header.signOut') }}</span>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -101,7 +102,7 @@ const userInitials = computed(() => {
             </template>
             <template v-else>
               <Button @click="handleLogin">
-                Sign In with Google
+                {{ t('header.signInWithGoogle') }}
               </Button>
             </template>
           </ClientOnly>

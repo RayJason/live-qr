@@ -7,21 +7,15 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
 } from "@/components/ui/card";
 import {
   FormControl,
   FormField,
   FormItem,
-  FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { toast } from "vue-sonner";
 import {
   AlertTriangle,
@@ -30,7 +24,6 @@ import {
   ShieldCheck,
   Phone,
   Mail,
-  Globe
 } from "lucide-vue-next";
 
 definePageMeta({
@@ -50,27 +43,31 @@ const {
   key: `public-product-${productId}`,
 });
 
+const productSeoDescription = () => {
+  if (product.value?.status === "LOST") {
+    return t("publicPage.lostSeoDescription", {
+      message: product.value?.lostMessage ? ` ${product.value.lostMessage}` : "",
+    });
+  }
+
+  return t("publicPage.safeSeoDescription");
+};
+
 useSeoMeta({
   title: () =>
     product.value?.name
       ? product.value?.status === "LOST"
-        ? `${t('status.lost')}: ${product.value?.name}`
-        : `${t('status.safe')} - ${product.value?.name}`
-      : "Anti-Lost Item",
-  description: () =>
-    product.value?.status === "LOST"
-      ? `HELP! This item is LOST. Please help return it to the owner. ${product.value?.lostMessage || ""}`
-      : `This item is protected by Anti-Lost. If found, please scan to contact owner.`,
+        ? `${t("status.lost")}: ${product.value.name}`
+        : `${t("status.safe")} - ${product.value.name}`
+      : t("publicPage.titleFallback"),
+  description: productSeoDescription,
   ogTitle: () =>
     product.value?.name
       ? product.value?.status === "LOST"
-        ? `${t('status.lost')}: ${product.value?.name}`
-        : `${t('status.safe')} - ${product.value?.name}`
-      : "Anti-Lost Item",
-  ogDescription: () =>
-    product.value?.status === "LOST"
-      ? `HELP! This item is LOST. Please help return it to the owner. ${product.value?.lostMessage || ""}`
-      : `This item is protected by Anti-Lost. If found, please scan to contact owner.`,
+        ? `${t("status.lost")}: ${product.value.name}`
+        : `${t("status.safe")} - ${product.value.name}`
+      : t("publicPage.titleFallback"),
+  ogDescription: productSeoDescription,
   ogImage: "/og-image.png",
   twitterCard: "summary_large_image",
 });
@@ -83,7 +80,7 @@ const formSchema = toTypedSchema(
   z.object({
     finderContact: z
       .string()
-      .min(1, t('action.yourContactPlaceholder')),
+      .min(1, t("validation.finderContactRequired")),
     message: z.string().optional(),
   }),
 );
@@ -105,17 +102,13 @@ const onSubmit = form.handleSubmit(async (values) => {
       },
     });
     reportSuccess.value = true;
-    toast.success(t('action.success'));
+    toast.success(t("action.success"));
   } catch (e) {
-    toast.error("Failed to send report. Please try again.");
+    toast.error(t("publicPage.reportError"));
   } finally {
     isSubmitting.value = false;
   }
 });
-
-const availableLocales = computed(() => {
-  return (locales.value as any[]).filter(i => i.code !== locale.value)
-})
 </script>
 
 <template>
@@ -128,16 +121,12 @@ const availableLocales = computed(() => {
     "
   >
     <div v-if="pending" class="flex flex-col items-center gap-4">
-      <div
-        class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"
-      ></div>
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary" />
       <p class="text-muted-foreground animate-pulse">{{ t('action.loading') }}</p>
     </div>
 
     <div v-else-if="error" class="max-w-md w-full text-center space-y-4">
-      <div
-        class="bg-destructive/10 text-destructive p-8 rounded-2xl border border-destructive/20 shadow-sm"
-      >
+      <div class="bg-destructive/10 text-destructive p-8 rounded-2xl border border-destructive/20 shadow-sm">
         <AlertTriangle class="h-12 w-12 mx-auto mb-4" />
         <h3 class="font-bold text-xl">{{ t('action.notFound') }}</h3>
         <p class="text-sm opacity-90">
@@ -148,31 +137,28 @@ const availableLocales = computed(() => {
     </div>
 
     <div v-else-if="product" class="max-w-md w-full space-y-6">
-        <!-- Language Switcher -->
-        <div class="flex justify-end">
-            <div class="flex gap-2">
-                <Button 
-                    v-for="l in (locales as any[])"
-                    :key="l.code"
-                    variant="ghost" 
-                    size="sm" 
-                    class="h-8 px-2 text-xs uppercase"
-                    :class="locale === l.code ? 'font-bold bg-black/5' : 'text-muted-foreground'"
-                    @click="setLocale(l.code)"
-                >
-                    {{ l.code }}
-                </Button>
-            </div>
+      <div class="flex justify-end">
+        <div class="flex gap-2">
+          <Button
+            v-for="l in (locales as any[])"
+            :key="l.code"
+            variant="ghost"
+            size="sm"
+            class="h-8 px-2 text-xs uppercase"
+            :class="locale === l.code ? 'font-bold bg-black/5' : 'text-muted-foreground'"
+            :title="l.name || l.code"
+            @click="setLocale(l.code)"
+          >
+            {{ l.code }}
+          </Button>
         </div>
+      </div>
 
-      <!-- Main Card -->
       <Card class="border-0 shadow-xl overflow-hidden relative">
-        <!-- Status Header Banner -->
         <div
           class="py-8 px-6 text-center relative overflow-hidden transition-colors duration-500"
           :class="isLost ? 'bg-red-600' : 'bg-emerald-500'"
         >
-          <!-- Background Pattern -->
           <div class="absolute inset-0 opacity-10 pointer-events-none">
             <svg
               class="h-full w-full"
@@ -190,9 +176,7 @@ const availableLocales = computed(() => {
               :class="isLost ? 'animate-pulse' : ''"
             />
 
-            <h1
-              class="text-3xl md:text-4xl font-black tracking-tight uppercase leading-none mb-2"
-            >
+            <h1 class="text-3xl md:text-4xl font-black tracking-tight uppercase leading-none mb-2">
               {{ product.name }}
             </h1>
 
@@ -204,26 +188,23 @@ const availableLocales = computed(() => {
             </div>
 
             <p
-              class="text-white/90 text-sm font-medium flex items-center gap-1"
               v-if="product?.user?.name"
+              class="text-white/90 text-sm font-medium flex items-center gap-1"
             >
-              Owner: {{ product.user.name }}
+              {{ t('publicPage.ownerName', { name: product.user.name }) }}
             </p>
           </div>
         </div>
 
         <CardContent class="pt-8 pb-8 px-6 space-y-4">
-          <!-- Product Description -->
           <div v-if="product.description" class="text-center">
             <p class="text-muted-foreground text-lg leading-relaxed">
               {{ product.description }}
             </p>
           </div>
 
-          <!-- Separator -->
-          <div v-if="product.description" class="h-px w-full bg-border"></div>
+          <div v-if="product.description" class="h-px w-full bg-border" />
 
-          <!-- Safe Mode Content -->
           <div v-if="!isLost" class="space-y-6">
             <div class="bg-muted/50 rounded-xl p-6 text-center space-y-3">
               <div
@@ -237,12 +218,8 @@ const availableLocales = computed(() => {
               </p>
             </div>
 
-            <!-- Optional Safe Mode Contact -->
             <div
-              v-if="
-                product.showContactWhenSafe &&
-                (product.contactEmail || product.contactPhone)
-              "
+              v-if="product.showContactWhenSafe && (product.contactEmail || product.contactPhone)"
               class="space-y-4 pt-2 animate-in fade-in"
             >
               <div class="relative">
@@ -250,9 +227,9 @@ const availableLocales = computed(() => {
                   <span class="w-full border-t" />
                 </div>
                 <div class="relative flex justify-center text-xs uppercase">
-                  <span class="bg-background px-2 text-muted-foreground"
-                    >{{ t('action.contactOwner') }}</span
-                  >
+                  <span class="bg-background px-2 text-muted-foreground">
+                    {{ t('action.contactOwner') }}
+                  </span>
                 </div>
               </div>
 
@@ -264,9 +241,7 @@ const availableLocales = computed(() => {
                 <div class="bg-primary/10 p-2 rounded-full text-primary">
                   <Phone class="h-4 w-4" />
                 </div>
-                <span class="text-base font-semibold">{{
-                  product.contactPhone
-                }}</span>
+                <span class="text-base font-semibold">{{ product.contactPhone }}</span>
               </a>
 
               <a
@@ -277,14 +252,11 @@ const availableLocales = computed(() => {
                 <div class="bg-primary/10 p-2 rounded-full text-primary">
                   <Mail class="h-4 w-4" />
                 </div>
-                <span class="text-base font-semibold">{{
-                  product.contactEmail
-                }}</span>
+                <span class="text-base font-semibold">{{ product.contactEmail }}</span>
               </a>
             </div>
           </div>
 
-          <!-- Lost Mode Content -->
           <div
             v-if="isLost && product"
             class="space-y-6 animate-in slide-in-from-bottom-4 fade-in duration-500"
@@ -294,19 +266,12 @@ const availableLocales = computed(() => {
               class="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2"
             >
               <Mail class="h-6 w-6 text-red-500 mb-1" />
-              <p
-                class="text-center font-semibold text-lg text-red-900 leading-relaxed max-w-[90%]"
-              >
+              <p class="text-center font-semibold text-lg text-red-900 leading-relaxed max-w-[90%]">
                 "{{ product.lostMessage }}"
               </p>
             </div>
 
-            <!-- Owner Contact -->
-            <div
-              v-if="product.contactPhone || product.contactEmail"
-              class="space-y-3"
-            >
-              <!-- Phone -->
+            <div v-if="product.contactPhone || product.contactEmail" class="space-y-3">
               <a
                 v-if="product.contactPhone"
                 :href="`tel:${product.contactPhone.replace(/\s/g, '')}`"
@@ -318,7 +283,6 @@ const availableLocales = computed(() => {
                 <span class="text-xl font-bold tracking-wide">{{ t('action.callOwner') }}</span>
               </a>
 
-              <!-- Email -->
               <a
                 v-if="product.contactEmail"
                 :href="`mailto:${product.contactEmail}`"
@@ -332,7 +296,6 @@ const availableLocales = computed(() => {
             </div>
           </div>
 
-          <!-- Report Action Area -->
           <div v-if="!showReportForm && !reportSuccess">
             <Button
               size="lg"
@@ -350,7 +313,6 @@ const availableLocales = computed(() => {
             </Button>
           </div>
 
-          <!-- Report Form -->
           <div
             v-if="showReportForm && !reportSuccess"
             class="space-y-4 animate-in fade-in slide-in-from-bottom-8"
@@ -358,7 +320,7 @@ const availableLocales = computed(() => {
             <div class="text-center pb-2">
               <h3 class="font-bold text-lg">{{ t('action.sendMessage') }}</h3>
               <p class="text-xs text-muted-foreground">
-                Notify the owner securely
+                {{ t('publicPage.reportFormDescription') }}
               </p>
             </div>
 
@@ -409,30 +371,22 @@ const availableLocales = computed(() => {
             </form>
           </div>
 
-          <!-- Success Message -->
           <div
             v-if="reportSuccess"
             class="text-center py-4 animate-in zoom-in duration-300"
           >
-            <div
-              class="bg-green-100 text-green-600 p-4 rounded-full inline-block mb-4 shadow-sm"
-            >
+            <div class="bg-green-100 text-green-600 p-4 rounded-full inline-block mb-4 shadow-sm">
               <CheckCircle class="h-10 w-10" />
             </div>
             <h3 class="text-2xl font-bold text-foreground">{{ t('action.success') }}</h3>
-            <p
-              class="text-muted-foreground mt-2 max-w-[200px] mx-auto leading-normal"
-            >
+            <p class="text-muted-foreground mt-2 max-w-[200px] mx-auto leading-normal">
               {{ t('action.successDesc') }}
             </p>
           </div>
         </CardContent>
       </Card>
 
-      <!-- Footer -->
-      <div
-        class="text-center space-y-2 opacity-60 hover:opacity-100 transition-opacity"
-      >
+      <div class="text-center space-y-2 opacity-60 hover:opacity-100 transition-opacity">
         <a
           href="/"
           target="_blank"
