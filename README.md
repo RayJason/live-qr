@@ -37,6 +37,24 @@ Anti-Lost addresses that by giving each item a permanent public URL at `/s/:id`.
    - In lost mode, the page highlights that the item is lost, shows recovery actions, and allows the finder to send a message.
 6. The owner receives the finder report in the dashboard and can optionally receive a Feishu notification.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/images/1.webp" alt="Anti-Lost screenshot 1" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/images/2.webp" alt="Anti-Lost screenshot 2" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/images/3.webp" alt="Anti-Lost screenshot 3" width="100%" />
+</p>
+
+<p align="center">
+  <img src="docs/images/4.webp" alt="Anti-Lost screenshot 4" width="100%" />
+</p>
+
 ## Product Behavior
 
 ### Private Dashboard
