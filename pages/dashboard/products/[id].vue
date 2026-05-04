@@ -32,6 +32,7 @@ import {
 } from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
 import ProductQRCard from "@/components/dashboard/ProductQRCard.vue";
+import QrCustomizer from "@/components/dashboard/QrCustomizer.vue";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -83,6 +84,12 @@ const formSchema = toTypedSchema(
     feishuWebhookUrl: z.string().optional(),
     status: z.boolean().default(false),
     showContactWhenSafe: z.boolean().default(false),
+    type: z.enum(['STICKER', 'KEYCHAIN', 'LUGGAGE_TAG', 'SNOWBOARD_STICKER', 'BOARDING_PASS']).optional(),
+    qrDotsColor: z.string().optional(),
+    qrCornerColor: z.string().optional(),
+    qrBackgroundColor: z.string().optional(),
+    qrLogoUrl: z.string().optional(),
+    qrCustomText: z.string().optional(),
   }),
 );
 
@@ -103,6 +110,12 @@ watch(
         feishuWebhookUrl: newProduct.feishuWebhookUrl ?? "",
         status: newProduct.status === "LOST",
         showContactWhenSafe: newProduct.showContactWhenSafe ?? false,
+        type: newProduct.type ?? "STICKER",
+        qrDotsColor: newProduct.qrDotsColor ?? "",
+        qrCornerColor: newProduct.qrCornerColor ?? "",
+        qrBackgroundColor: newProduct.qrBackgroundColor ?? "",
+        qrLogoUrl: newProduct.qrLogoUrl ?? "",
+        qrCustomText: newProduct.qrCustomText ?? "",
       });
     }
   },
@@ -419,7 +432,33 @@ const deleteProduct = async () => {
       </div>
 
       <div class="space-y-6">
-        <ProductQRCard :productId="productId" />
+        <Card>
+          <CardHeader class="pb-3">
+            <CardTitle class="text-lg">QR 码定制</CardTitle>
+            <CardDescription>选择品类并自定义样式</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <QrCustomizer
+              :product-id="productId"
+              :model-value="{
+                type: (form.values.type as any) || 'STICKER',
+                dotsColor: form.values.qrDotsColor || '',
+                cornerColor: form.values.qrCornerColor || '',
+                backgroundColor: form.values.qrBackgroundColor || '',
+                logoUrl: form.values.qrLogoUrl || '',
+                customText: form.values.qrCustomText || '',
+              }"
+              @update:model-value="(v: any) => {
+                form.setFieldValue('type', v.type)
+                form.setFieldValue('qrDotsColor', v.dotsColor)
+                form.setFieldValue('qrCornerColor', v.cornerColor)
+                form.setFieldValue('qrBackgroundColor', v.backgroundColor)
+                form.setFieldValue('qrLogoUrl', v.logoUrl)
+                form.setFieldValue('qrCustomText', v.customText)
+              }"
+            />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader class="pb-3">

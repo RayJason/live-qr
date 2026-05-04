@@ -21,6 +21,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   products      Product[]
+  orders        Order[]
 }
 
 model Account {
@@ -63,21 +64,46 @@ enum ProductStatus {
   LOST
 }
 
+enum ProductType {
+  STICKER
+  KEYCHAIN
+  LUGGAGE_TAG
+  SNOWBOARD_STICKER
+  BOARDING_PASS
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
 model Product {
   id                String        @id @default(cuid())
   name              String
   description       String?
+  type              ProductType   @default(STICKER)
   status            ProductStatus @default(NORMAL)
-  contactEmail      String?       // Email contact for this item
-  contactPhone      String?       // Phone contact for this item
-  lostMessage       String?       // Message to show when lost
-  feishuWebhookUrl  String?       // Custom webhook URL
+  contactEmail      String?
+  contactPhone      String?
+  lostMessage       String?
+  feishuWebhookUrl  String?
   showContactWhenSafe Boolean @default(false)
-  
+
+  // QR customization
+  qrDotsColor       String?
+  qrCornerColor     String?
+  qrBackgroundColor String?
+  qrLogoUrl         String?
+  qrCustomText      String?
+
   userId            String
   user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   reports           Report[]
+  orders            Order[]
 
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
@@ -88,8 +114,25 @@ model Report {
   productId     String
   product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   
-  finderContact String?  // Contact info of the person who found it
-  message       String?  // Message from finder
+  finderContact String?
+  message       String?
   
   createdAt     DateTime @default(now())
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  productId     String
+  product       Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quantity      Int         @default(1)
+  size          String?
+  recipientName String?
+  address       String?
+  phone         String?
+  notes         String?
+  status        OrderStatus @default(PENDING)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 }

@@ -6,6 +6,13 @@ const createProductSchema = z.object({
     description: z.string().optional(),
     contactEmail: z.string().optional(),
     contactPhone: z.string().optional(),
+    feishuWebhookUrl: z.string().optional(),
+    type: z.enum(['STICKER', 'KEYCHAIN', 'LUGGAGE_TAG', 'SNOWBOARD_STICKER', 'BOARDING_PASS']).optional().default('STICKER'),
+    qrDotsColor: z.string().optional(),
+    qrCornerColor: z.string().optional(),
+    qrBackgroundColor: z.string().optional(),
+    qrLogoUrl: z.string().optional(),
+    qrCustomText: z.string().optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -22,12 +29,20 @@ export default defineEventHandler(async (event) => {
         })
     }
 
+    const d = validation.data
     const product = await prisma.product.create({
         data: {
-            name: validation.data.name,
-            description: validation.data.description,
-            contactEmail: validation.data.contactEmail || null,
-            contactPhone: validation.data.contactPhone || null,
+            name: d.name,
+            description: d.description || null,
+            contactEmail: d.contactEmail || null,
+            contactPhone: d.contactPhone || null,
+            feishuWebhookUrl: d.feishuWebhookUrl || null,
+            type: d.type,
+            qrDotsColor: d.qrDotsColor || null,
+            qrCornerColor: d.qrCornerColor || null,
+            qrBackgroundColor: d.qrBackgroundColor || null,
+            qrLogoUrl: d.qrLogoUrl || null,
+            qrCustomText: d.qrCustomText || null,
             userId: user.id,
             status: 'NORMAL'
         }

@@ -10,12 +10,14 @@ export default defineEventHandler(async (event) => {
         select: {
             id: true,
             name: true,
+            type: true,
             status: true,
             description: true,
             contactEmail: true,
             contactPhone: true,
             lostMessage: true,
             showContactWhenSafe: true,
+            qrCustomText: true,
             user: {
                 select: {
                     name: true // "This item belongs to Ray"

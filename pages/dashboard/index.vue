@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert'
 import { QrCode as QrIcon, AlertTriangle } from 'lucide-vue-next'
 import { Skeleton } from '@/components/ui/skeleton'
+import { productTypeLabels, qrPresets, type ProductTypeKey } from '@/lib/qr-presets'
 
 definePageMeta({
   middleware: 'auth'
@@ -89,6 +90,9 @@ const statusLabel = (status: string) => {
             </Badge>
           </div>
           <CardDescription class="line-clamp-2">
+            <span v-if="product.type" class="inline-flex items-center gap-1 text-xs text-muted-foreground mb-1">
+              {{ qrPresets[product.type as ProductTypeKey]?.icon }} {{ productTypeLabels[product.type as ProductTypeKey] || product.type }}
+            </span>
             {{ product.description || t('dashboard.noDescription') }}
           </CardDescription>
         </CardHeader>

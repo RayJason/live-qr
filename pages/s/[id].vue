@@ -193,6 +193,12 @@ const onSubmit = form.handleSubmit(async (values) => {
             >
               {{ t('publicPage.ownerName', { name: product.user.name }) }}
             </p>
+            <p
+              v-if="product.qrCustomText"
+              class="text-white/70 text-xs mt-1 italic"
+            >
+              "{{ product.qrCustomText }}"
+            </p>
           </div>
         </div>
 
