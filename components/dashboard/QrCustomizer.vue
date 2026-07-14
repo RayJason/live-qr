@@ -170,14 +170,16 @@ onMounted(() => {
       </p>
     </div>
 
-    <div class="grid gap-6 md:grid-cols-2">
+    <div class="grid gap-6">
       <!-- Preview -->
       <div class="flex flex-col items-center gap-4 p-6 bg-muted/30 rounded-xl border">
-        <div class="bg-white p-4 rounded-lg shadow-sm border" :style="{
-          width: `${preset.width + 32}px`,
-          height: `${preset.height + 32}px`,
-        }">
-          <div ref="qrContainer" class="flex items-center justify-center" />
+        <div
+          class="w-full bg-white p-4 rounded-lg shadow-sm border"
+          :style="{
+            maxWidth: `${preset.width + 32}px`,
+          }"
+        >
+          <div ref="qrContainer" class="qr-preview-canvas flex w-full items-center justify-center" />
         </div>
         <p class="text-xs text-muted-foreground">
           {{ preset.label }} · 建议尺寸 {{ preset.suggestedSize }}
@@ -275,3 +277,11 @@ onMounted(() => {
     </div>
   </div>
 </template>
+
+<style scoped>
+.qr-preview-canvas :deep(canvas) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+</style>
