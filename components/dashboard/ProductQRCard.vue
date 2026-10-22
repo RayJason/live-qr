@@ -26,7 +26,7 @@ const { t } = useI18n();
 const { copy } = useClipboard({ legacy: true });
 
 // QR Design Logic
-const advancedQrRef = ref<any>(null);
+const advancedQrRef = ref<InstanceType<typeof AdvancedQrCode> | null>(null)
 const qrDotsType = ref<DotType>("rounded");
 const qrCornerSquareType = ref<CornerSquareType>("extra-rounded");
 const qrCornerDotType = ref<CornerDotType>("dot");
@@ -58,18 +58,23 @@ const copyLink = () => {
   toast.success(t('dashboard.linkCopied'));
 };
 
-const copyQrImage = () => {
-  if (advancedQrRef.value) {
-    const success = advancedQrRef.value.download("png");
-    if (success) {
-      toast.success(t('dashboard.imageDownloaded'));
-    } else {
-      toast.error(t("qr.notReady"));
+const copyQrImage = async () => {
+  try {
+    if (!advancedQrRef.value) {
+      toast.error(t('qr.missingComponent'))
+      return
     }
-  } else {
-    toast.error(t("qr.missingComponent"));
+    const success = await advancedQrRef.value.download('png')
+    if (success) {
+      toast.success(t('dashboard.imageDownloaded'))
+    } else {
+      toast.error(t('qr.notReady'))
+    }
+  } catch {
+    toast.error(t('qr.notReady'))
   }
-};
+}
+
 </script>
 
 <template>

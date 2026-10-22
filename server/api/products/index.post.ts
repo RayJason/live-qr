@@ -1,5 +1,6 @@
 import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
+import { qrColorSchema, qrDesignSchema } from '~/lib/qr-design'
 
 const createProductSchema = z.object({
     name: z.string().min(1, 'Name is required').max(50),
@@ -8,11 +9,12 @@ const createProductSchema = z.object({
     contactPhone: z.string().optional(),
     feishuWebhookUrl: z.string().optional(),
     type: z.enum(['STICKER', 'KEYCHAIN', 'LUGGAGE_TAG', 'SNOWBOARD_STICKER', 'BOARDING_PASS']).optional().default('STICKER'),
-    qrDotsColor: z.string().optional(),
-    qrCornerColor: z.string().optional(),
-    qrBackgroundColor: z.string().optional(),
+    qrDotsColor: qrColorSchema.or(z.literal('')).optional(),
+    qrCornerColor: qrColorSchema.or(z.literal('')).optional(),
+    qrBackgroundColor: qrColorSchema.or(z.literal('')).optional(),
     qrLogoUrl: z.string().optional(),
     qrCustomText: z.string().optional(),
+    qrStyle: qrDesignSchema.optional(),
 })
 
 export default defineEventHandler(async (event) => {
@@ -43,6 +45,7 @@ export default defineEventHandler(async (event) => {
             qrBackgroundColor: d.qrBackgroundColor || null,
             qrLogoUrl: d.qrLogoUrl || null,
             qrCustomText: d.qrCustomText || null,
+            qrStyle: d.qrStyle,
             userId: user.id,
             status: 'NORMAL'
         }
