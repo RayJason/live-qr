@@ -26,6 +26,7 @@ export const qrDesignSchema = z.object({
   gradientType: z.enum(['solid', 'linear', 'radial']),
   gradientColor: qrColorSchema,
   gradientRotation: z.number().min(0).max(360),
+  pattern: z.enum(['standard', 'horizontal', 'vertical']).default('standard'),
 })
 
 export type QrDesign = z.infer<typeof qrDesignSchema>
@@ -58,17 +59,32 @@ export function resolveQrDesign(value: Parameters<typeof qrDesignSchema.safePars
 }
 
 export const qrStylePresets = [
-  { id: 'classic', label: '经典', dotsColor: '#111827', cornerColor: '#111827',
+  { id: 'classic', label: '方格', description: '连片方块 · 方形定位角',
     design: { ...defaultQrDesign('KEYCHAIN') } },
-  { id: 'soft', label: '柔和', dotsColor: '#1a1a2e', cornerColor: '#16213e',
-    design: { ...defaultQrDesign('STICKER') } },
-  { id: 'dots', label: '圆点', dotsColor: '#115e59', cornerColor: '#134e4a',
+  { id: 'dots', label: '圆点', description: '独立圆点 · 圆环定位角',
     design: { ...defaultQrDesign('LUGGAGE_TAG') } },
-  { id: 'leaf', label: '叶片', dotsColor: '#166534', cornerColor: '#14532d',
+  { id: 'horizontal', label: '横纹', description: '横向胶囊 · 圆角定位角',
+    design: { ...defaultQrDesign('STICKER'), dotsType: 'square' as const, pattern: 'horizontal' as const } },
+  { id: 'vertical', label: '竖纹', description: '纵向胶囊 · 方形定位角',
+    design: { ...defaultQrDesign('KEYCHAIN'), pattern: 'vertical' as const } },
+  { id: 'leaf', label: '叶片', description: '弧形叶片 · 圆角定位角',
     design: { ...defaultQrDesign('STICKER'), dotsType: 'classy-rounded' as const } },
-  { id: 'gradient', label: '渐变', dotsColor: '#1d4ed8', cornerColor: '#1e3a8a',
-    design: { ...defaultQrDesign('STICKER'), gradientType: 'linear' as const, gradientColor: '#7e22ce' } },
 ]
+
+export function applyQrStylePreset(model: QrCustomization, preset: typeof qrStylePresets[number]): QrCustomization & { design: QrDesign } {
+  return { ...model, design: {
+    ...(model.design ?? defaultQrDesign(model.type)),
+    dotsType: preset.design.dotsType,
+    cornerSquareType: preset.design.cornerSquareType,
+    cornerDotType: preset.design.cornerDotType,
+    pattern: preset.design.pattern,
+  } }
+}
+
+export function matchesQrStylePreset(design: QrDesign, preset: typeof qrStylePresets[number]) {
+  return (['dotsType', 'cornerSquareType', 'cornerDotType', 'pattern'] as const)
+    .every(key => design[key] === preset.design[key])
+}
 
 export function createQrOptions(model: QrCustomization, data: string, size = 360): Options {
   const design = model.design ?? defaultQrDesign(model.type)
@@ -90,7 +106,7 @@ export function createQrOptions(model: QrCustomization, data: string, size = 360
     image: model.logoUrl || undefined,
     qrOptions: { mode: 'Byte', errorCorrectionLevel: 'H' },
     imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 8, crossOrigin: 'anonymous', saveAsBlob: true },
-    dotsOptions: { color: model.dotsColor, type: design.dotsType, gradient },
+    dotsOptions: { color: model.dotsColor, type: design.pattern === 'standard' ? design.dotsType : 'square', gradient },
     cornersSquareOptions: { color: model.cornerColor, type: design.cornerSquareType },
     cornersDotOptions: { color: model.cornerColor, type: design.cornerDotType },
     backgroundOptions: { color: model.backgroundColor },

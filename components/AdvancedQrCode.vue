@@ -2,10 +2,13 @@
 import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
 import type QRCodeStyling from 'qr-code-styling'
 import type { Options, DotType, CornerSquareType, CornerDotType, FileExtension } from 'qr-code-styling'
+import { applyQrPattern } from '@/lib/qr-pattern'
+import type { QrDesign } from '@/lib/qr-design'
 
 const props = withDefaults(defineProps<{
   data: string
   options?: Options
+  pattern?: QrDesign['pattern']
   width?: number
   height?: number
   margin?: number
@@ -55,7 +58,7 @@ async function render() {
       await image.decode()
       if (current !== revision || !container.value) return
     }
-    const code = new renderer(options.value)
+    const code = applyQrPattern(new renderer(options.value), props.pattern)
     await code.getRawData('svg')
     if (current !== revision || !container.value) return
     container.value.replaceChildren()
@@ -74,16 +77,16 @@ async function download(extension: FileExtension, name = 'qr', size = 1200) {
   const source = options.value
   const scale = size / (source.width ?? 300)
   // Render a snapshot so later edits cannot alter an in-progress download.
-  const code = new renderer({
+  const code = applyQrPattern(new renderer({
     ...source, width: size, height: size,
     margin: Math.round((source.margin ?? 0) * scale),
     imageOptions: { ...source.imageOptions, margin: Math.round((source.imageOptions?.margin ?? 0) * scale) },
-  })
+  }), props.pattern)
   await code.download({ extension, name })
   return true
 }
 
-watch(options, render, { deep: true, flush: 'post' })
+watch([options, () => props.pattern], render, { deep: true, flush: 'post' })
 onMounted(render)
 onBeforeUnmount(() => { revision++ })
 defineExpose({ download })

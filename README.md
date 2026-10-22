@@ -17,7 +17,7 @@ Anti-Lost addresses that by giving each item a permanent public URL at `/s/:id`.
 
 - Sign in with Google and create a personal dashboard.
 - Register multiple items and assign each one a persistent public QR page.
-- Generate styled QR codes with five visual presets (classic, soft, dots, leaf, gradient), six dot shapes, independent outer/inner finder shapes, and solid/linear/radial fills.
+- Generate styled QR codes with five structurally distinct presets (grid, dots, horizontal capsules, vertical capsules, leaf), eight module styles, independent outer/inner finder shapes, and solid/linear/radial fills.
 - Download the current design as a 1200 × 1200 PNG or a scalable SVG, or copy the item's permanent public link. Preview and export share the same renderer; the exported image contains only the QR code, while the custom signature appears on the public item page.
 - Upload an optional center logo (PNG, JPEG, or WebP, up to 2 MB). The generator uses high error correction and embeds the logo in exported SVGs.
 - Set dot, corner, and background colors with independent 0–100% opacity in the QR customizer. Opacity is saved in the existing color fields as eight-digit hex (`#RRGGBBAA`); six-digit colors remain fully opaque.
@@ -282,9 +282,9 @@ If you want to expand it, the most natural next steps are printable label templa
 
 ## QR Customization
 
-The item detail page uses `qr-code-styling` (MIT) for both preview and export. Product category selects the initial design and suggested physical size; visual presets and individual controls can then override that design. The QR symbol stays square for every category, with a quiet zone around it. Color opacity remains supported. Use dark modules on a light background and test the downloaded code on the final material before printing, especially with transparent colors, gradients, or logos.
+The item detail page uses `qr-code-styling` (MIT) for both preview and export. Product category selects the initial design and suggested physical size; visual presets and individual controls can then override that design. Preset thumbnails all use black on white. Applying a preset changes only module geometry and finder shapes; it preserves existing colors, opacity, gradients, logo and signature. Gradients remain available as a separate fill control. The QR symbol stays square, with a quiet zone around it. Color opacity remains supported. Use dark modules on a light background and test the downloaded code on the final material before printing, especially with transparent colors, gradients, or logos.
 
-Click **Save Changes** after editing to persist the design. Shape and gradient settings are validated by the same schema on the client and product APIs and stored in `Product.qrStyle`; existing color, logo and signature fields keep their original meaning. Existing items without `qrStyle` use their category defaults. Selecting a category or restoring its preset resets shapes and colors while keeping the logo and signature. Downloads capture the current edits, including edits that have not yet been saved.
+Click **Save Changes** after editing to persist the design. Shape, module pattern and gradient settings are validated by the same schema on the client and product APIs and stored in `Product.qrStyle`; existing color, logo and signature fields keep their original meaning. Existing items without `qrStyle` use their category defaults. Selecting a category or restoring its preset resets shapes and colors while keeping the logo and signature. Older saved designs without `pattern` retain their existing geometry and default to the standard module pattern; this extension needs no additional database migration. Downloads capture the current edits, including edits that have not yet been saved.
 
 Before running this version against an existing database, apply the included additive migration:
 
@@ -293,7 +293,9 @@ bunx prisma migrate deploy
 bunx prisma generate
 ```
 
-The normal `bun run build` already includes these commands. For a compilation check without database changes, use `bunx nuxt build`. Focused QR configuration checks run with `bun test tests/qr-design.test.js`.
+The normal `bun run build` already includes these commands. For a compilation check without database changes, use `bunx nuxt build`. Focused QR configuration checks run with `bun test tests`.
+
+The horizontal-capsule and vertical-capsule styles use the public `qr-code-styling.applyExtension` hook. The extension transforms only the data-module clip path, leaving finder patterns and the logo cutout to the original renderer. The generated SVG is also the source of PNG exports, so both formats share the same geometry and gradients. This integration targets the SVG module-layer layout in `qr-code-styling` 1.9.x and fails visibly if that layout changes; check module-extension tests and decoded PNG/SVG outputs before upgrading the dependency. The leaf preset uses the library's native rounded-leaf modules.
 
 ### Open-source options considered
 

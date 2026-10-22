@@ -4,30 +4,25 @@ import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import AdvancedQrCode from '@/components/AdvancedQrCode.vue'
 import QrColorInput from './QrColorInput.vue'
-import { cornerStyles, createQrOptions, dotStyles, qrStylePresets, type QrCustomization, type QrDesign } from '@/lib/qr-design'
+import { applyQrStylePreset, cornerStyles, createQrOptions, dotStyles, matchesQrStylePreset, qrStylePresets, type QrCustomization, type QrDesign } from '@/lib/qr-design'
 
 const props = defineProps<{ modelValue: QrCustomization & { design: QrDesign } }>()
 const emit = defineEmits<{ 'update:modelValue': [value: QrCustomization & { design: QrDesign }] }>()
 const id = useId()
 const thumbnails = qrStylePresets.map(preset => ({
   ...preset,
-  options: createQrOptions({ type: 'STICKER', backgroundColor: '#ffffff', logoUrl: '', customText: '', ...preset }, 'QR', 96),
+  options: createQrOptions({ type: 'STICKER', dotsColor: '#000000', cornerColor: '#000000',
+    backgroundColor: '#ffffff', logoUrl: '', customText: '', design: preset.design }, 'QR', 160),
 }))
-const selectedPreset = computed(() => qrStylePresets.find(preset =>
-  preset.dotsColor === props.modelValue.dotsColor && preset.cornerColor === props.modelValue.cornerColor &&
-  props.modelValue.backgroundColor === '#ffffff' &&
-  JSON.stringify(preset.design) === JSON.stringify(props.modelValue.design),
-)?.id)
+const selectedPreset = computed(() => qrStylePresets.find(preset => matchesQrStylePreset(props.modelValue.design, preset))?.id)
+const customPatterns = [{ value: 'horizontal', label: '横纹' }, { value: 'vertical', label: '竖纹' }] as const
 
 function updateDesign(patch: Partial<QrDesign>) {
   emit('update:modelValue', { ...props.modelValue, design: { ...props.modelValue.design, ...patch } })
 }
 
 function selectPreset(preset: typeof qrStylePresets[number]) {
-  emit('update:modelValue', {
-    ...props.modelValue, dotsColor: preset.dotsColor, cornerColor: preset.cornerColor,
-    backgroundColor: '#ffffff', design: { ...preset.design },
-  })
+  emit('update:modelValue', applyQrStylePreset(props.modelValue, preset))
 }
 </script>
 
@@ -35,18 +30,20 @@ function selectPreset(preset: typeof qrStylePresets[number]) {
   <div class="space-y-5">
     <fieldset class="min-w-0 space-y-2">
       <legend class="text-sm font-medium">风格预设</legend>
-      <div class="grid grid-cols-3 gap-2">
+      <div class="grid grid-cols-2 gap-2">
         <button
-          v-for="preset in thumbnails" :key="preset.id" type="button" :title="`应用${preset.label}风格`"
+          v-for="preset in thumbnails" :key="preset.id" type="button" :title="`${preset.description}；保留当前配色`"
           :aria-pressed="selectedPreset === preset.id"
           class="flex min-w-0 flex-col items-center gap-1 rounded-lg border p-2 text-xs transition-colors hover:border-primary/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           :class="selectedPreset === preset.id ? 'border-primary bg-primary/5' : 'border-input'"
           @click="selectPreset(preset)"
         >
-          <AdvancedQrCode data="QR" :options="preset.options" class="w-12 bg-white" aria-hidden="true" />
-          <span>{{ preset.label }}</span>
+          <AdvancedQrCode data="QR" :options="preset.options" :pattern="preset.design.pattern" class="w-20 bg-white" aria-hidden="true" />
+          <span class="font-medium">{{ preset.label }}</span>
+          <span class="text-center text-xs leading-relaxed text-muted-foreground">{{ preset.description }}</span>
         </button>
       </div>
+      <p class="text-xs text-muted-foreground">黑白预览展示结构差异，切换预设保留当前配色。</p>
     </fieldset>
 
     <fieldset class="min-w-0 space-y-2">
@@ -54,10 +51,14 @@ function selectPreset(preset: typeof qrStylePresets[number]) {
       <div class="flex flex-wrap gap-2">
         <Button
           v-for="style in dotStyles" :key="style.value" type="button" variant="outline" size="sm"
-          :title="`使用${style.label}码点`" :aria-pressed="modelValue.design.dotsType === style.value"
-          :class="modelValue.design.dotsType === style.value ? 'border-primary bg-primary/5 text-primary' : ''"
-          @click="updateDesign({ dotsType: style.value })"
+          :title="`使用${style.label}码点`" :aria-pressed="modelValue.design.pattern === 'standard' && modelValue.design.dotsType === style.value"
+          :class="modelValue.design.pattern === 'standard' && modelValue.design.dotsType === style.value ? 'border-primary bg-primary/5 text-primary' : ''"
+          @click="updateDesign({ dotsType: style.value, pattern: 'standard' })"
         >{{ style.label }}</Button>
+        <Button v-for="pattern in customPatterns" :key="pattern.value" type="button" variant="outline" size="sm"
+          :title="`使用${pattern.label}码点`" :aria-pressed="modelValue.design.pattern === pattern.value"
+          :class="modelValue.design.pattern === pattern.value ? 'border-primary bg-primary/5 text-primary' : ''"
+          @click="updateDesign({ dotsType: 'square', pattern: pattern.value })">{{ pattern.label }}</Button>
       </div>
     </fieldset>
 

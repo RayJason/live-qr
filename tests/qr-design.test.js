@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createQrOptions, defaultQrDesign, qrColorSchema, qrDesignSchema, qrStylePresets, resolveQrDesign } from '../lib/qr-design'
+import { applyQrStylePreset, createQrOptions, defaultQrDesign, matchesQrStylePreset, qrColorSchema, qrDesignSchema, qrStylePresets, resolveQrDesign } from '../lib/qr-design'
 import { qrPresets } from '../lib/qr-presets'
 
 const model = {
@@ -38,11 +38,45 @@ describe('saved QR designs', () => {
     }
   })
 
+  test('legacy custom colors, shapes and gradients survive the new optional pattern fields', () => {
+    const legacy = { ...defaultQrDesign('STICKER'), dotsType: 'classy', gradientType: 'radial', gradientColor: '#12345680' }
+    delete legacy.pattern
+    expect(resolveQrDesign(legacy, 'KEYCHAIN')).toEqual({ ...legacy, pattern: 'standard' })
+  })
+
+  test('every preset has a distinct black-and-white geometry and keeps current colors, logo and fill', () => {
+    const original = { ...model, logoUrl: 'data:image/png;base64,test',
+      design: { ...defaultQrDesign('STICKER'), gradientType: 'radial', gradientColor: '#12345680', gradientRotation: 180 } }
+    const signatures = qrStylePresets.map(preset => {
+      const applied = applyQrStylePreset(original, preset)
+      expect(applied.dotsColor).toBe(original.dotsColor)
+      expect(applied.cornerColor).toBe(original.cornerColor)
+      expect(applied.backgroundColor).toBe(original.backgroundColor)
+      expect(applied.logoUrl).toBe(original.logoUrl)
+      expect(applied.customText).toBe(original.customText)
+      expect(applied.design.gradientType).toBe('radial')
+      expect(applied.design.gradientColor).toBe('#12345680')
+      expect(applied.design.gradientRotation).toBe(180)
+      expect(matchesQrStylePreset(applied.design, preset)).toBe(true)
+      return JSON.stringify([applied.design.dotsType, applied.design.cornerSquareType,
+        applied.design.cornerDotType, applied.design.pattern])
+    })
+    expect(new Set(signatures).size).toBe(qrStylePresets.length)
+  })
+
+  test('custom patterns use square source modules while native shapes remain unchanged', () => {
+    for (const preset of qrStylePresets) {
+      const options = createQrOptions(applyQrStylePreset(model, preset), data)
+      if (preset.design.pattern === 'standard') expect(options.dotsOptions.type).toBe(preset.design.dotsType)
+      if (preset.design.pattern !== 'standard') expect(options.dotsOptions.type).toBe('square')
+    }
+  })
+
   test('rejects unsupported shapes, invalid gradient colors and angles', () => {
     const design = defaultQrDesign('STICKER')
     for (const patch of [
       { dotsType: 'triangle' }, { cornerSquareType: 'invalid' }, { cornerDotType: 'invalid' },
-      { gradientType: 'conic' }, { gradientColor: 'red' },
+      { pattern: 'star' }, { gradientType: 'conic' }, { gradientColor: 'red' },
       { gradientRotation: -1 }, { gradientRotation: 361 },
     ]) {
       expect(qrDesignSchema.safeParse({ ...design, ...patch }).success).toBe(false)

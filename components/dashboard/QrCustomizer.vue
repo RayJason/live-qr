@@ -127,7 +127,7 @@ function setReady(value: boolean) {
 
     <div class="space-y-3 rounded-xl border bg-muted/30 p-4">
       <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white">
-        <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options"
+        <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options" :pattern="customization.design.pattern"
           @ready="setReady" @error="renderError = $event" />
         <p v-else class="p-6 text-center text-sm text-destructive" role="alert">请输入有效的十六进制颜色，如 #1a1a2e 或 #1a1a2eff</p>
       </div>
