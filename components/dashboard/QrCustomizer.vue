@@ -150,12 +150,14 @@ onMounted(() => {
     <!-- Type Selector -->
     <div>
       <Label class="text-sm font-medium mb-3 block">选择品类</Label>
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2">
         <button
           v-for="(preset, key) in qrPresets"
           :key="key"
+          :title="preset.label"
+          :aria-pressed="selectedType === key"
           type="button"
-          class="relative flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-left"
+          class="relative flex min-w-0 flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-left"
           :class="selectedType === key
             ? 'border-primary bg-primary/5 shadow-sm'
             : 'border-muted hover:border-primary/30 hover:bg-muted/30'"
