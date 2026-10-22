@@ -7,6 +7,7 @@ export default defineNuxtConfig({
       title: 'Anti-Lost',
       meta: [
         { charset: 'utf-8' },
+        { name: 'color-scheme', content: 'light dark' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
       ],
       link: [
@@ -17,9 +18,15 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: [
     '@nuxtjs/tailwindcss',
+    '@nuxtjs/color-mode',
     'nuxt-auth-utils',
     '@nuxtjs/i18n'
   ],
+  colorMode: {
+    preference: 'system',
+    fallback: 'light',
+    classSuffix: '',
+  },
   i18n: {
     vueI18n: './i18n.config.ts',
     locales: [

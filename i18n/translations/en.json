@@ -325,5 +325,11 @@
       "vertical": "Vertical capsules · square corners",
       "leaf": "Curved leaves · rounded corners"
     }
+  },
+  "theme": {
+    "label": "Change theme",
+    "system": "System",
+    "light": "Light",
+    "dark": "Dark"
   }
 }

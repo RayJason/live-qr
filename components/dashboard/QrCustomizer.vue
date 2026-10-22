@@ -128,10 +128,10 @@ function setReady(value: boolean) {
     </fieldset>
 
     <div class="qr-preview min-w-0 space-y-3 rounded-xl border bg-muted/30 p-4">
-      <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white">
+      <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white [color-scheme:light]">
         <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options" :pattern="customization.design.pattern"
           @ready="setReady" @error="renderError = 'customizer.renderError'" />
-        <p v-else class="p-6 text-center text-sm text-destructive" role="alert">{{ t('customizer.invalidColor') }}</p>
+        <p v-else class="p-6 text-center text-sm text-red-700" role="alert">{{ t('customizer.invalidColor') }}</p>
       </div>
       <p v-if="renderError" class="text-xs text-destructive" role="alert">{{ t(renderError) }}</p>
       <p class="text-center text-xs text-muted-foreground">{{ t('customizer.suggestedSize', { category: t(`customizer.categories.${customization.type}`), size: preset.suggestedSize }) }}</p>
@@ -151,39 +151,39 @@ function setReady(value: boolean) {
     </div>
 
     <div class="min-w-0 space-y-6">
-    <QrStyleControls :model-value="customization" @update:model-value="update" />
+      <QrStyleControls :model-value="customization" @update:model-value="update" />
 
-    <div class="space-y-4 border-t pt-5">
-      <QrColorInput :model-value="customization.dotsColor" :label="t('customizer.dotsColor')" @update:model-value="update({ dotsColor: $event })" />
-      <QrColorInput :model-value="customization.cornerColor" :label="t('customizer.cornerColor')" @update:model-value="update({ cornerColor: $event })" />
-      <QrColorInput :model-value="customization.backgroundColor" :label="t('customizer.backgroundColor')" @update:model-value="update({ backgroundColor: $event })" />
-      <p class="text-xs leading-relaxed text-muted-foreground">{{ t('customizer.colorHint') }}</p>
-    </div>
-
-    <div class="space-y-2 border-t pt-5">
-      <Label :for="`${id}-logo`" class="text-xs">{{ t('customizer.logo') }}</Label>
-      <input :id="`${id}-logo`" ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="handleLogoUpload" />
-      <div class="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" :title="t('customizer.uploadTitle')"
-          :disabled="uploading" @click="logoInput?.click()">
-          <Upload class="mr-1 h-3.5 w-3.5" />{{ uploading ? t('customizer.reading') : customization.logoUrl ? t('customizer.replaceLogo') : t('customizer.uploadLogo') }}
-        </Button>
-        <Button v-if="customization.logoUrl" type="button" variant="ghost" size="sm" :title="t('customizer.removeLogo')"
-          :disabled="uploading" @click="update({ logoUrl: '' }); logoError = ''">{{ t('customizer.clear') }}</Button>
+      <div class="grid gap-4 border-t pt-5 sm:grid-cols-3">
+        <QrColorInput :model-value="customization.dotsColor" :label="t('customizer.dotsColor')" @update:model-value="update({ dotsColor: $event })" />
+        <QrColorInput :model-value="customization.cornerColor" :label="t('customizer.cornerColor')" @update:model-value="update({ cornerColor: $event })" />
+        <QrColorInput :model-value="customization.backgroundColor" :label="t('customizer.backgroundColor')" @update:model-value="update({ backgroundColor: $event })" />
+        <p class="text-xs leading-relaxed text-muted-foreground sm:col-span-3">{{ t('customizer.colorHint') }}</p>
       </div>
-      <p v-if="logoError" class="text-xs text-destructive" role="alert">{{ t(logoError) }}</p>
-    </div>
 
-    <div class="space-y-2">
-      <Label :for="`${id}-text`" class="text-xs">{{ t('customizer.signature') }}</Label>
-      <Input :id="`${id}-text`" :model-value="customization.customText" :placeholder="t('customizer.signaturePlaceholder')" class="h-9 text-sm"
-        @update:model-value="update({ customText: String($event) })" />
-      <p class="text-xs text-muted-foreground">{{ t('customizer.signatureHint') }}</p>
-    </div>
-    <Button type="button" variant="ghost" size="sm" :title="t('customizer.resetTitle')" @click="selectType(customization.type)">
-      <RefreshCw class="mr-1 h-3.5 w-3.5" />{{ t('customizer.reset') }}
-    </Button>
-    <p class="text-xs text-muted-foreground">{{ t('customizer.saveHint') }}</p>
+      <div class="space-y-2 border-t pt-5">
+        <Label :for="`${id}-logo`" class="text-xs">{{ t('customizer.logo') }}</Label>
+        <input :id="`${id}-logo`" ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="handleLogoUpload" />
+        <div class="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" size="sm" :title="t('customizer.uploadTitle')"
+            :disabled="uploading" @click="logoInput?.click()">
+            <Upload class="mr-1 h-3.5 w-3.5" />{{ uploading ? t('customizer.reading') : customization.logoUrl ? t('customizer.replaceLogo') : t('customizer.uploadLogo') }}
+          </Button>
+          <Button v-if="customization.logoUrl" type="button" variant="ghost" size="sm" :title="t('customizer.removeLogo')"
+            :disabled="uploading" @click="update({ logoUrl: '' }); logoError = ''">{{ t('customizer.clear') }}</Button>
+        </div>
+        <p v-if="logoError" class="text-xs text-destructive" role="alert">{{ t(logoError) }}</p>
+      </div>
+
+      <div class="space-y-2">
+        <Label :for="`${id}-text`" class="text-xs">{{ t('customizer.signature') }}</Label>
+        <Input :id="`${id}-text`" :model-value="customization.customText" :placeholder="t('customizer.signaturePlaceholder')" class="h-9 text-sm"
+          @update:model-value="update({ customText: String($event) })" />
+        <p class="text-xs text-muted-foreground">{{ t('customizer.signatureHint') }}</p>
+      </div>
+      <Button type="button" variant="ghost" size="sm" :title="t('customizer.resetTitle')" @click="selectType(customization.type)">
+        <RefreshCw class="mr-1 h-3.5 w-3.5" />{{ t('customizer.reset') }}
+      </Button>
+      <p class="text-xs text-muted-foreground">{{ t('customizer.saveHint') }}</p>
     </div>
   </div>
 </template>

@@ -523,24 +523,24 @@ const deleteProduct = async () => {
           </CardContent>
         </Card>
       </div>
-        <Card class="min-w-0 lg:col-span-3">
-          <CardHeader class="pb-3">
-            <CardTitle class="text-lg">{{ t('customizer.title') }}</CardTitle>
-            <CardDescription>{{ t('customizer.subtitle') }}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <QrCustomizer v-model="qrCustomization" :product-id="productId" />
-          </CardContent>
-        </Card>
-        <div class="flex items-center justify-end gap-4 lg:col-span-3">
-          <Button type="button" variant="outline" @click="router.back()" :disabled="isSaving">
-            {{ t('action.cancel') }}
-          </Button>
-          <Button type="submit" :disabled="isSaving" class="min-w-[120px]">
-            <Loader2 v-if="isSaving" class="mr-2 h-4 w-4 animate-spin" />
-            {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
-          </Button>
-        </div>
+      <Card class="min-w-0 lg:col-span-3">
+        <CardHeader class="pb-3">
+          <CardTitle class="text-lg">{{ t('customizer.title') }}</CardTitle>
+          <CardDescription>{{ t('customizer.subtitle') }}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <QrCustomizer v-model="qrCustomization" :product-id="productId" />
+        </CardContent>
+      </Card>
+      <div class="flex items-center justify-end gap-4 lg:col-span-3">
+        <Button type="button" variant="outline" :title="t('action.cancel')" @click="router.back()" :disabled="isSaving">
+          {{ t('action.cancel') }}
+        </Button>
+        <Button type="submit" :title="t('action.saveChanges')" :disabled="isSaving" class="min-w-[120px]">
+          <Loader2 v-if="isSaving" class="mr-2 h-4 w-4 animate-spin" />
+          {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
+        </Button>
+      </div>
     </form>
   </div>
 </template>

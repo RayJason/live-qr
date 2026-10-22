@@ -60,6 +60,7 @@ const userInitials = computed(() => {
           <!-- Search or other controls could go here -->
         </div>
         <nav class="flex items-center space-x-2">
+          <ThemeSwitcher />
           <LanguageSwitcher />
           <ClientOnly>
             <template v-if="loggedIn">

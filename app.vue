@@ -2,6 +2,7 @@
 import { Toaster } from '@/components/ui/sonner'
 
 const { locale } = useI18n()
+const colorMode = useColorMode()
 
 useHead(() => ({
   htmlAttrs: {
@@ -15,6 +16,6 @@ useHead(() => ({
     <NuxtLayout>
       <NuxtPage />
     </NuxtLayout>
-    <Toaster richColors position="top-center" />
+    <Toaster richColors position="top-center" :theme="colorMode.value === 'dark' ? 'dark' : 'light'" />
   </div>
 </template>
