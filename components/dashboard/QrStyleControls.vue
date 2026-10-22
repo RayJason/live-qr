@@ -30,7 +30,7 @@ function selectPreset(preset: typeof qrStylePresets[number]) {
   <div class="space-y-5">
     <fieldset class="min-w-0 space-y-2">
       <legend class="text-sm font-medium">风格预设</legend>
-      <div class="grid grid-cols-2 gap-2">
+      <div class="grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-2">
         <button
           v-for="preset in thumbnails" :key="preset.id" type="button" :title="`${preset.description}；保留当前配色`"
           :aria-pressed="selectedPreset === preset.id"

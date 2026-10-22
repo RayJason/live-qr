@@ -109,8 +109,8 @@ function setReady(value: boolean) {
 </script>
 
 <template>
-  <div class="min-w-0 space-y-6">
-    <fieldset class="min-w-0 space-y-2">
+  <div class="qr-customizer min-w-0 grid items-start gap-6">
+    <fieldset class="qr-categories min-w-0 space-y-2 lg:col-span-2">
       <legend class="text-sm font-medium">选择品类</legend>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2">
         <button v-for="(item, key) in qrPresets" :key="key" type="button"
@@ -125,7 +125,7 @@ function setReady(value: boolean) {
       <p class="text-xs text-muted-foreground">{{ preset.description }}</p>
     </fieldset>
 
-    <div class="space-y-3 rounded-xl border bg-muted/30 p-4">
+    <div class="qr-preview min-w-0 space-y-3 rounded-xl border bg-muted/30 p-4">
       <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white">
         <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options" :pattern="customization.design.pattern"
           @ready="setReady" @error="renderError = $event" />
@@ -148,6 +148,7 @@ function setReady(value: boolean) {
       </Button>
     </div>
 
+    <div class="min-w-0 space-y-6">
     <QrStyleControls :model-value="customization" @update:model-value="update" />
 
     <div class="space-y-4 border-t pt-5">
@@ -181,5 +182,30 @@ function setReady(value: boolean) {
       <RefreshCw class="mr-1 h-3.5 w-3.5" />恢复品类预设
     </Button>
     <p class="text-xs text-muted-foreground">修改样式后，点击「保存更改」以便下次继续编辑。</p>
+    </div>
   </div>
 </template>
+
+<style scoped>
+.qr-customizer {
+  container-type: inline-size;
+}
+
+@container (min-width: 44rem) {
+  .qr-categories {
+    grid-column: 1 / -1;
+  }
+
+  .qr-preview {
+    position: sticky;
+    top: 5rem;
+  }
+}
+
+/* Use the card's available width, including when embedded in a dialog. */
+@media (min-width: 1024px) {
+  .qr-customizer {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+}
+</style>
