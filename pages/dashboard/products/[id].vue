@@ -31,8 +31,8 @@ import {
   Loader2,
 } from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
-import ProductQRCard from "@/components/dashboard/ProductQRCard.vue";
-import QrCustomizer from "@/components/dashboard/QrCustomizer.vue";
+import QrCustomizer from '@/components/dashboard/QrCustomizer.vue'
+import { defaultQrDesign, qrColorSchema, qrDesignSchema, resolveQrDesign, type QrCustomization } from '@/lib/qr-design'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -85,11 +85,12 @@ const formSchema = toTypedSchema(
     status: z.boolean().default(false),
     showContactWhenSafe: z.boolean().default(false),
     type: z.enum(['STICKER', 'KEYCHAIN', 'LUGGAGE_TAG', 'SNOWBOARD_STICKER', 'BOARDING_PASS']).optional(),
-    qrDotsColor: z.string().optional(),
-    qrCornerColor: z.string().optional(),
-    qrBackgroundColor: z.string().optional(),
+    qrDotsColor: qrColorSchema.or(z.literal('')).optional(),
+    qrCornerColor: qrColorSchema.or(z.literal('')).optional(),
+    qrBackgroundColor: qrColorSchema.or(z.literal('')).optional(),
     qrLogoUrl: z.string().optional(),
     qrCustomText: z.string().optional(),
+    qrStyle: qrDesignSchema.optional(),
   }),
 );
 
@@ -116,11 +117,33 @@ watch(
         qrBackgroundColor: newProduct.qrBackgroundColor ?? "",
         qrLogoUrl: newProduct.qrLogoUrl ?? "",
         qrCustomText: newProduct.qrCustomText ?? "",
+        qrStyle: resolveQrDesign(newProduct.qrStyle, newProduct.type),
       });
     }
   },
   { immediate: true },
 );
+
+const qrCustomization = computed<QrCustomization>({
+  get: () => ({
+    type: form.values.type || 'STICKER',
+    dotsColor: form.values.qrDotsColor || '',
+    cornerColor: form.values.qrCornerColor || '',
+    backgroundColor: form.values.qrBackgroundColor || '',
+    logoUrl: form.values.qrLogoUrl || '',
+    customText: form.values.qrCustomText || '',
+    design: { ...defaultQrDesign(form.values.type || 'STICKER'), ...form.values.qrStyle },
+  }),
+  set: (value) => {
+    form.setFieldValue('type', value.type)
+    form.setFieldValue('qrDotsColor', value.dotsColor)
+    form.setFieldValue('qrCornerColor', value.cornerColor)
+    form.setFieldValue('qrBackgroundColor', value.backgroundColor)
+    form.setFieldValue('qrLogoUrl', value.logoUrl)
+    form.setFieldValue('qrCustomText', value.customText)
+    form.setFieldValue('qrStyle', value.design)
+  },
+})
 
 const isLost = computed(() => form.values.status);
 const isSaving = ref(false);
@@ -438,25 +461,7 @@ const deleteProduct = async () => {
             <CardDescription>选择品类并自定义样式</CardDescription>
           </CardHeader>
           <CardContent>
-            <QrCustomizer
-              :product-id="productId"
-              :model-value="{
-                type: (form.values.type as any) || 'STICKER',
-                dotsColor: form.values.qrDotsColor || '',
-                cornerColor: form.values.qrCornerColor || '',
-                backgroundColor: form.values.qrBackgroundColor || '',
-                logoUrl: form.values.qrLogoUrl || '',
-                customText: form.values.qrCustomText || '',
-              }"
-              @update:model-value="(v: any) => {
-                form.setFieldValue('type', v.type)
-                form.setFieldValue('qrDotsColor', v.dotsColor)
-                form.setFieldValue('qrCornerColor', v.cornerColor)
-                form.setFieldValue('qrBackgroundColor', v.backgroundColor)
-                form.setFieldValue('qrLogoUrl', v.logoUrl)
-                form.setFieldValue('qrCustomText', v.customText)
-              }"
-            />
+            <QrCustomizer v-model="qrCustomization" :product-id="productId" />
           </CardContent>
         </Card>
 

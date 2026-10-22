@@ -1,5 +1,6 @@
 import prisma from '~/server/utils/prisma'
 import { z } from 'zod'
+import { qrColorSchema, qrDesignSchema } from '~/lib/qr-design'
 
 const updateProductSchema = z.object({
     name: z.string().min(1).optional(),
@@ -11,11 +12,12 @@ const updateProductSchema = z.object({
     status: z.enum(['NORMAL', 'LOST']).optional(),
     showContactWhenSafe: z.boolean().optional(),
     type: z.enum(['STICKER', 'KEYCHAIN', 'LUGGAGE_TAG', 'SNOWBOARD_STICKER', 'BOARDING_PASS']).optional(),
-    qrDotsColor: z.string().optional().nullable(),
-    qrCornerColor: z.string().optional().nullable(),
-    qrBackgroundColor: z.string().optional().nullable(),
+    qrDotsColor: qrColorSchema.or(z.literal('')).optional().nullable(),
+    qrCornerColor: qrColorSchema.or(z.literal('')).optional().nullable(),
+    qrBackgroundColor: qrColorSchema.or(z.literal('')).optional().nullable(),
     qrLogoUrl: z.string().optional().nullable(),
     qrCustomText: z.string().optional().nullable(),
+    qrStyle: qrDesignSchema.optional(),
 })
 
 export default defineEventHandler(async (event) => {

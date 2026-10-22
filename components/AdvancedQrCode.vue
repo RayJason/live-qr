@@ -1,96 +1,103 @@
 <script setup lang="ts">
-import QRCodeStyling from "qr-code-styling";
-import type {
-  Options,
-  DrawType,
-  TypeNumber,
-  ErrorCorrectionLevel,
-  DotType,
-  CornerSquareType,
-  CornerDotType,
-} from "qr-code-styling";
+import { computed, onBeforeUnmount, onMounted, shallowRef, useTemplateRef, watch } from 'vue'
+import type QRCodeStyling from 'qr-code-styling'
+import type { Options, DotType, CornerSquareType, CornerDotType, FileExtension } from 'qr-code-styling'
 
-const props = defineProps({
-  data: { type: String, required: true },
-  width: { type: Number, default: 300 },
-  height: { type: Number, default: 300 },
-  margin: { type: Number, default: 10 },
-  image: { type: String, default: "" },
-  dotsType: { type: String as PropType<DotType>, default: "square" },
-  dotsColor: { type: String, default: "#000000" },
-  cornerSquareType: { type: String as PropType<CornerSquareType>, default: "square" },
-  cornerSquareColor: { type: String, default: "#000000" },
-  cornerDotType: { type: String as PropType<CornerDotType>, default: "square" },
-  cornerDotColor: { type: String, default: "#000000" },
-  background: { type: String, default: "#ffffff" },
-});
+const props = withDefaults(defineProps<{
+  data: string
+  options?: Options
+  width?: number
+  height?: number
+  margin?: number
+  image?: string
+  dotsType?: DotType
+  dotsColor?: string
+  cornerSquareType?: CornerSquareType
+  cornerSquareColor?: string
+  cornerDotType?: CornerDotType
+  cornerDotColor?: string
+  background?: string
+}>(), {
+  width: 300, height: 300, margin: 36, image: '', dotsType: 'square', dotsColor: '#000000',
+  cornerSquareType: 'square', cornerSquareColor: '#000000',
+  cornerDotType: 'square', cornerDotColor: '#000000', background: '#ffffff',
+})
 
-const qrCode = ref<QRCodeStyling>();
-const qrContainer = ref<HTMLElement>();
+const emit = defineEmits<{ ready: [value: boolean]; error: [message: string] }>()
+const container = useTemplateRef<HTMLElement>('container')
+const ready = shallowRef(false)
+let revision = 0
+let renderer: typeof QRCodeStyling | undefined
 
-const options = computed<Options>(() => ({
-  width: props.width,
-  height: props.height,
-  type: "canvas" as DrawType,
-  data: props.data,
-  image: props.image,
-  margin: props.margin,
-  qrOptions: {
-    typeNumber: 0 as TypeNumber,
-    mode: "Byte",
-    errorCorrectionLevel: "H" as ErrorCorrectionLevel,
-  },
-  imageOptions: {
-    hideBackgroundDots: true,
-    imageSize: 0.4,
-    margin: 10,
-    crossOrigin: "anonymous",
-  },
-  dotsOptions: {
-    color: props.dotsColor,
-    type: props.dotsType,
-  },
-  backgroundOptions: {
-    color: props.background,
-  },
-  cornersSquareOptions: {
-    color: props.cornerSquareColor,
-    type: props.cornerSquareType,
-  },
-  cornersDotOptions: {
-    color: props.cornerDotColor,
-    type: props.cornerDotType,
-  },
-}));
+const options = computed<Options>(() => props.options ?? {
+  type: 'svg', width: props.width, height: props.height, margin: props.margin,
+  data: props.data, image: props.image || undefined,
+  qrOptions: { mode: 'Byte', errorCorrectionLevel: 'H' },
+  imageOptions: { hideBackgroundDots: true, imageSize: 0.3, margin: 8, crossOrigin: 'anonymous', saveAsBlob: true },
+  dotsOptions: { color: props.dotsColor, type: props.dotsType },
+  cornersSquareOptions: { color: props.cornerSquareColor, type: props.cornerSquareType },
+  cornersDotOptions: { color: props.cornerDotColor, type: props.cornerDotType },
+  backgroundOptions: { color: props.background },
+})
 
-onMounted(() => {
-  if (process.client) {
-    qrCode.value = new QRCodeStyling(options.value);
-    qrCode.value.append(qrContainer.value);
-  }
-});
-
-watch(
-  options,
-  (newOptions) => {
-    if (qrCode.value) {
-      qrCode.value.update(newOptions);
+async function render() {
+  if (!container.value) return
+  const current = ++revision
+  ready.value = false
+  emit('ready', false)
+  try {
+    renderer ??= (await import('qr-code-styling')).default
+    if (current !== revision || !container.value) return
+    if (options.value.image) {
+      const image = new Image()
+      image.crossOrigin = 'anonymous'
+      image.src = options.value.image
+      await image.decode()
+      if (current !== revision || !container.value) return
     }
-  },
-  { deep: true }
-);
-
-const download = (extension: "png" | "jpeg" | "webp") => {
-  if (qrCode.value) {
-    qrCode.value.download({ extension });
-    return true;
+    const code = new renderer(options.value)
+    await code.getRawData('svg')
+    if (current !== revision || !container.value) return
+    container.value.replaceChildren()
+    code.append(container.value)
+    ready.value = true
+    emit('ready', true)
+  } catch {
+    if (current !== revision) return
+    container.value?.replaceChildren()
+    emit('error', '二维码生成失败，请检查颜色和 Logo 后重试')
   }
-  return false;
-};
+}
 
-defineExpose({ download });
+async function download(extension: FileExtension, name = 'qr', size = 1200) {
+  if (!renderer || !ready.value) return false
+  const source = options.value
+  const scale = size / (source.width ?? 300)
+  // Render a snapshot so later edits cannot alter an in-progress download.
+  const code = new renderer({
+    ...source, width: size, height: size,
+    margin: Math.round((source.margin ?? 0) * scale),
+    imageOptions: { ...source.imageOptions, margin: Math.round((source.imageOptions?.margin ?? 0) * scale) },
+  })
+  await code.download({ extension, name })
+  return true
+}
+
+watch(options, render, { deep: true, flush: 'post' })
+onMounted(render)
+onBeforeUnmount(() => { revision++ })
+defineExpose({ download })
 </script>
 
 <template>
-  <div ref="qrContainer"></div>
+  <div ref="container" class="qr-renderer" role="img" aria-label="二维码" :aria-busy="!ready" />
 </template>
+
+<style scoped>
+.qr-renderer :deep(svg),
+.qr-renderer :deep(canvas) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+</style>

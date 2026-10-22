@@ -1,255 +1,185 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
-import QRCodeStyling from 'qr-code-styling'
-import type { Options, DotType, CornerSquareType, CornerDotType } from 'qr-code-styling'
+import { computed, nextTick, shallowRef, useId, useTemplateRef } from 'vue'
+import { Upload, RefreshCw, Download, Copy } from 'lucide-vue-next'
+import { toast } from 'vue-sonner'
+import { useClipboard } from '@vueuse/core'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import AdvancedQrCode from '@/components/AdvancedQrCode.vue'
 import QrColorInput from './QrColorInput.vue'
-import {
-  qrPresets,
-  productTypeLabels,
-  sizeOptions,
-  type ProductTypeKey,
-} from '@/lib/qr-presets'
-import { Upload, RefreshCw } from 'lucide-vue-next'
+import QrStyleControls from './QrStyleControls.vue'
+import { qrPresets, type ProductTypeKey } from '@/lib/qr-presets'
+import { createQrOptions, defaultQrDesign, qrColorSchema, qrDesignSchema, type QrCustomization } from '@/lib/qr-design'
 
-const props = defineProps<{
-  productId?: string
-  modelValue?: {
-    type: ProductTypeKey
-    dotsColor: string
-    cornerColor: string
-    backgroundColor: string
-    logoUrl: string
-    customText: string
-  }
-}>()
-
-const emit = defineEmits<{
-  'update:modelValue': [value: typeof props.modelValue]
-}>()
-
-const selectedType = ref<ProductTypeKey>(props.modelValue?.type || 'STICKER')
-const dotsColor = ref(props.modelValue?.dotsColor || qrPresets.STICKER.dotsColor)
-const cornerColor = ref(props.modelValue?.cornerColor || qrPresets.STICKER.cornerColor)
-const backgroundColor = ref(props.modelValue?.backgroundColor || qrPresets.STICKER.backgroundColor)
-const logoUrl = ref(props.modelValue?.logoUrl || '')
-const customText = ref(props.modelValue?.customText || '')
-
-const qrContainer = ref<HTMLElement>()
-const qrCode = ref<QRCodeStyling>()
-const previewUrl = ref('')
-
-const preset = computed(() => qrPresets[selectedType.value])
-
-const qrData = computed(() => {
-  if (!props.productId) return 'https://anti-lost.app/s/preview'
-  return `${window.location.origin}/s/${props.productId}`
-})
-
-const qrOptions = computed<Options>(() => ({
-  width: preset.value.width,
-  height: preset.value.height,
-  type: 'canvas' as const,
-  data: qrData.value,
-  image: logoUrl.value || undefined,
-  margin: 10,
-  qrOptions: {
-    typeNumber: 0 as const,
-    mode: 'Byte',
-    errorCorrectionLevel: logoUrl.value ? 'H' : 'M',
-  },
-  imageOptions: {
-    hideBackgroundDots: true,
-    imageSize: 0.35,
-    margin: 8,
-    crossOrigin: 'anonymous',
-  },
-  dotsOptions: {
-    color: dotsColor.value,
-    type: preset.value.dotsType,
-  },
-  backgroundOptions: {
-    color: backgroundColor.value,
-  },
-  cornersSquareOptions: {
-    color: cornerColor.value,
-    type: preset.value.cornerSquareType,
-  },
-  cornersDotOptions: {
-    color: cornerColor.value,
-    type: preset.value.cornerDotType,
-  },
+const props = defineProps<{ productId?: string }>()
+const model = defineModel<QrCustomization>({ default: () => ({
+  type: 'STICKER', dotsColor: '', cornerColor: '', backgroundColor: '', logoUrl: '', customText: '',
+}) })
+const id = useId()
+const origin = useRequestURL().origin
+const qrData = computed(() => `${origin}/s/${props.productId || 'preview'}`)
+const preset = computed(() => qrPresets[model.value.type])
+const customization = computed(() => ({
+  ...model.value,
+  dotsColor: model.value.dotsColor || preset.value.dotsColor,
+  cornerColor: model.value.cornerColor || preset.value.cornerColor,
+  backgroundColor: model.value.backgroundColor || preset.value.backgroundColor,
+  design: model.value.design ?? defaultQrDesign(model.value.type),
 }))
+const validColors = computed(() => [customization.value.dotsColor, customization.value.cornerColor, customization.value.backgroundColor]
+  .every(color => qrColorSchema.safeParse(color).success))
+const validDesign = computed(() => validColors.value && qrDesignSchema.safeParse(customization.value.design).success)
+const options = computed(() => createQrOptions(customization.value, qrData.value))
+const preview = useTemplateRef<InstanceType<typeof AdvancedQrCode>>('preview')
+const logoInput = useTemplateRef<HTMLInputElement>('logoInput')
+const ready = shallowRef(false)
+const downloading = shallowRef(false)
+const uploading = shallowRef(false)
+const renderError = shallowRef('')
+const logoError = shallowRef('')
+const { copy } = useClipboard({ legacy: true })
 
-function renderQr() {
-  if (!qrContainer.value || !process.client) return
-  if (qrCode.value) {
-    qrCode.value.update(qrOptions.value)
-  } else {
-    qrCode.value = new QRCodeStyling(qrOptions.value)
-    qrCode.value.append(qrContainer.value)
-  }
+function update(patch: Partial<QrCustomization>) {
+  model.value = { ...customization.value, ...patch }
 }
 
 function selectType(type: ProductTypeKey) {
-  selectedType.value = type
-  const p = qrPresets[type]
-  dotsColor.value = p.dotsColor
-  cornerColor.value = p.cornerColor
-  backgroundColor.value = p.backgroundColor
-  emitUpdate()
+  const defaults = qrPresets[type]
+  update({ type, dotsColor: defaults.dotsColor, cornerColor: defaults.cornerColor,
+    backgroundColor: defaults.backgroundColor, design: defaultQrDesign(type) })
 }
 
-function emitUpdate() {
-  emit('update:modelValue', {
-    type: selectedType.value,
-    dotsColor: dotsColor.value,
-    cornerColor: cornerColor.value,
-    backgroundColor: backgroundColor.value,
-    logoUrl: logoUrl.value,
-    customText: customText.value,
-  })
-}
-
-function handleLogoUpload(e: Event) {
-  const file = (e.target as HTMLInputElement).files?.[0]
+async function handleLogoUpload(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.[0]
+  input.value = ''
   if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    logoUrl.value = reader.result as string
-    nextTick(renderQr)
-    emitUpdate()
+  logoError.value = ''
+  if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+    logoError.value = '请选择不超过 2 MB 的 PNG、JPG 或 WebP 图片'
+    return
   }
-  reader.readAsDataURL(file)
+  uploading.value = true
+  try {
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('图片读取失败'))
+      reader.onerror = () => reject(new Error('图片读取失败'))
+      reader.readAsDataURL(file)
+    })
+    const image = new Image()
+    image.src = dataUrl
+    await image.decode()
+    update({ logoUrl: dataUrl })
+  } catch {
+    logoError.value = '图片无法读取，请选择其他图片'
+  } finally {
+    uploading.value = false
+  }
 }
 
-function resetToPreset() {
-  dotsColor.value = preset.value.dotsColor
-  cornerColor.value = preset.value.cornerColor
-  backgroundColor.value = preset.value.backgroundColor
-  renderQr()
-  emitUpdate()
+async function download(extension: 'png' | 'svg') {
+  downloading.value = true
+  try {
+    await nextTick()
+    const success = await preview.value?.download(extension, `qr-${props.productId || 'preview'}`)
+    if (!success) throw new Error('二维码未就绪')
+    toast.success(`${extension.toUpperCase()} 二维码已下载`)
+  } catch {
+    toast.error('二维码下载失败，请检查 Logo 或重试')
+  } finally {
+    downloading.value = false
+  }
 }
 
-watch([dotsColor, cornerColor, backgroundColor, logoUrl], () => {
-  nextTick(renderQr)
-}, { deep: true })
+async function copyLink() {
+  try {
+    await copy(qrData.value)
+    toast.success('链接已复制')
+  } catch {
+    toast.error('链接复制失败，请重试')
+  }
+}
 
-watch(selectedType, () => {
-  nextTick(renderQr)
-})
-
-onMounted(() => {
-  nextTick(renderQr)
-})
+function setReady(value: boolean) {
+  ready.value = value
+  renderError.value = ''
+}
 </script>
 
 <template>
-  <div class="space-y-6">
-    <!-- Type Selector -->
-    <div>
-      <Label class="text-sm font-medium mb-3 block">选择品类</Label>
+  <div class="min-w-0 space-y-6">
+    <fieldset class="min-w-0 space-y-2">
+      <legend class="text-sm font-medium">选择品类</legend>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2">
-        <button
-          v-for="(preset, key) in qrPresets"
-          :key="key"
-          :title="preset.label"
-          :aria-pressed="selectedType === key"
-          type="button"
-          class="relative flex min-w-0 flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all text-left"
-          :class="selectedType === key
-            ? 'border-primary bg-primary/5 shadow-sm'
-            : 'border-muted hover:border-primary/30 hover:bg-muted/30'"
-          @click="selectType(key as ProductTypeKey)"
-        >
-          <span class="text-2xl">{{ preset.icon }}</span>
-          <span class="text-xs font-semibold leading-tight text-center">{{ preset.label }}</span>
+        <button v-for="(item, key) in qrPresets" :key="key" type="button"
+          :title="item.label" :aria-pressed="customization.type === key"
+          class="flex min-w-0 flex-col items-center gap-1 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          :class="customization.type === key ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/30 hover:bg-muted/30'"
+          @click="selectType(key)">
+          <span class="text-2xl" aria-hidden="true">{{ item.icon }}</span>
+          <span class="text-center text-xs font-semibold leading-tight">{{ item.label }}</span>
         </button>
       </div>
-      <p class="text-xs text-muted-foreground mt-2">
-        {{ preset.description }}
-      </p>
-    </div>
+      <p class="text-xs text-muted-foreground">{{ preset.description }}</p>
+    </fieldset>
 
-    <div class="grid gap-6">
-      <!-- Preview -->
-      <div class="flex flex-col items-center gap-4 p-6 bg-muted/30 rounded-xl border">
-        <div
-          class="w-full bg-white p-4 rounded-lg shadow-sm border"
-          :style="{
-            maxWidth: `${preset.width + 32}px`,
-          }"
-        >
-          <div ref="qrContainer" class="qr-preview-canvas flex w-full items-center justify-center" />
-        </div>
-        <p class="text-xs text-muted-foreground">
-          {{ preset.label }} · 建议尺寸 {{ preset.suggestedSize }}
-        </p>
+    <div class="space-y-3 rounded-xl border bg-muted/30 p-4">
+      <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white">
+        <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options"
+          @ready="setReady" @error="renderError = $event" />
+        <p v-else class="p-6 text-center text-sm text-destructive" role="alert">请输入有效的十六进制颜色，如 #1a1a2e 或 #1a1a2eff</p>
       </div>
-
-      <!-- Controls -->
-      <div class="space-y-4">
-        <!-- Custom Text -->
-        <div class="space-y-2">
-          <Label class="text-xs">个性签名</Label>
-          <Input
-            v-model="customText"
-            placeholder="如：Ray 的雪板 🏂"
-            class="h-9 text-sm"
-            @update:model-value="emitUpdate"
-          />
-        </div>
-
-        <!-- Colors -->
-        <QrColorInput v-model="dotsColor" label="码点颜色" @update:model-value="emitUpdate" />
-        <QrColorInput v-model="cornerColor" label="定位角颜色" @update:model-value="emitUpdate" />
-        <QrColorInput v-model="backgroundColor" label="背景颜色" @update:model-value="emitUpdate" />
-
-        <!-- Logo -->
-        <div class="space-y-2">
-          <Label class="text-xs">中心 Logo（可选）</Label>
-          <div class="flex gap-2">
-            <Button type="button" variant="outline" size="sm" class="h-9" as-child>
-              <label class="cursor-pointer flex items-center gap-1">
-                <Upload class="h-3 w-3" />
-                <span>{{ logoUrl ? '更换' : '上传' }}</span>
-                <input type="file" accept="image/*" class="hidden" @change="handleLogoUpload" />
-              </label>
-            </Button>
-            <Button
-              v-if="logoUrl"
-              type="button"
-              variant="ghost"
-              size="sm"
-              class="h-9 text-xs"
-              @click="logoUrl = ''; nextTick(renderQr); emitUpdate()"
-            >
-              清除
-            </Button>
-          </div>
-        </div>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          class="text-xs"
-          @click="resetToPreset"
-        >
-          <RefreshCw class="h-3 w-3 mr-1" />
-          恢复预设
+      <p v-if="renderError" class="text-xs text-destructive" role="alert">{{ renderError }}</p>
+      <p class="text-center text-xs text-muted-foreground">{{ preset.label }} · 建议尺寸 {{ preset.suggestedSize }}</p>
+      <div class="grid grid-cols-2 gap-2">
+        <Button type="button" variant="outline" size="sm" title="下载 1200 × 1200 像素 PNG 图片"
+          :disabled="!ready || !validDesign || downloading || uploading" @click="download('png')">
+          <Download class="mr-1 h-3.5 w-3.5" />PNG 图片
+        </Button>
+        <Button type="button" variant="outline" size="sm" title="下载可无损缩放的 SVG 矢量图"
+          :disabled="!ready || !validDesign || downloading || uploading" @click="download('svg')">
+          <Download class="mr-1 h-3.5 w-3.5" />SVG 矢量图
         </Button>
       </div>
+      <Button v-if="productId" type="button" variant="ghost" size="sm" class="w-full" title="复制物品的扫码链接" @click="copyLink">
+        <Copy class="mr-1 h-3.5 w-3.5" />复制链接
+      </Button>
     </div>
+
+    <QrStyleControls :model-value="customization" @update:model-value="update" />
+
+    <div class="space-y-4 border-t pt-5">
+      <QrColorInput :model-value="customization.dotsColor" label="码点颜色" @update:model-value="update({ dotsColor: $event })" />
+      <QrColorInput :model-value="customization.cornerColor" label="定位角颜色" @update:model-value="update({ cornerColor: $event })" />
+      <QrColorInput :model-value="customization.backgroundColor" label="背景颜色" @update:model-value="update({ backgroundColor: $event })" />
+      <p class="text-xs leading-relaxed text-muted-foreground">建议使用深色码点和浅色背景。透明色及渐变效果请在实际材质上试扫后再印刷。</p>
+    </div>
+
+    <div class="space-y-2 border-t pt-5">
+      <Label :for="`${id}-logo`" class="text-xs">中心 Logo（可选）</Label>
+      <input :id="`${id}-logo`" ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="handleLogoUpload" />
+      <div class="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" size="sm" title="上传不超过 2 MB 的 PNG、JPG 或 WebP 图片"
+          :disabled="uploading" @click="logoInput?.click()">
+          <Upload class="mr-1 h-3.5 w-3.5" />{{ uploading ? '读取中…' : customization.logoUrl ? '更换 Logo' : '上传 Logo' }}
+        </Button>
+        <Button v-if="customization.logoUrl" type="button" variant="ghost" size="sm" title="移除二维码中心 Logo"
+          :disabled="uploading" @click="update({ logoUrl: '' }); logoError = ''">清除</Button>
+      </div>
+      <p v-if="logoError" class="text-xs text-destructive" role="alert">{{ logoError }}</p>
+    </div>
+
+    <div class="space-y-2">
+      <Label :for="`${id}-text`" class="text-xs">个性签名</Label>
+      <Input :id="`${id}-text`" :model-value="customization.customText" placeholder="如：Ray 的雪板 🏂" class="h-9 text-sm"
+        @update:model-value="update({ customText: String($event) })" />
+      <p class="text-xs text-muted-foreground">签名显示在扫码页面，下载图片仅包含二维码。</p>
+    </div>
+    <Button type="button" variant="ghost" size="sm" title="恢复当前品类的默认形状、颜色和填色" @click="selectType(customization.type)">
+      <RefreshCw class="mr-1 h-3.5 w-3.5" />恢复品类预设
+    </Button>
+    <p class="text-xs text-muted-foreground">修改样式后，点击「保存更改」以便下次继续编辑。</p>
   </div>
 </template>
-
-<style scoped>
-.qr-preview-canvas :deep(canvas) {
-  display: block;
-  width: 100%;
-  height: auto;
-}
-</style>
