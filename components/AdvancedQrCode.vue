@@ -5,6 +5,8 @@ import type { Options, DotType, CornerSquareType, CornerDotType, FileExtension }
 import { applyQrPattern } from '@/lib/qr-pattern'
 import type { QrDesign } from '@/lib/qr-design'
 
+const { t } = useI18n()
+
 const props = withDefaults(defineProps<{
   data: string
   options?: Options
@@ -68,7 +70,7 @@ async function render() {
   } catch {
     if (current !== revision) return
     container.value?.replaceChildren()
-    emit('error', '二维码生成失败，请检查颜色和 Logo 后重试')
+    emit('error', t('customizer.renderError'))
   }
 }
 
@@ -93,7 +95,7 @@ defineExpose({ download })
 </script>
 
 <template>
-  <div ref="container" class="qr-renderer" role="img" aria-label="二维码" :aria-busy="!ready" />
+  <div ref="container" class="qr-renderer" role="img" :aria-label="t('customizer.qrLabel')" :aria-busy="!ready" />
 </template>
 
 <style scoped>

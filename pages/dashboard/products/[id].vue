@@ -211,17 +211,17 @@ const deleteProduct = async () => {
           <ArrowLeft class="h-4 w-4" />
           <span>{{ t('action.back') }}</span>
         </div>
-        <div class="flex items-center gap-3">
-          <h1 class="text-3xl font-bold tracking-tight">
+        <div class="flex flex-wrap items-center gap-3">
+          <h1 class="min-w-0 break-words text-3xl font-bold tracking-tight">
             {{ product?.name || t('dashboard.productDetails') }}
           </h1>
           <div
             v-if="product"
             :class="[
-              'px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border',
+              'px-2.5 py-0.5 shrink-0 rounded-full text-xs font-semibold uppercase tracking-wide border',
               isLost
                 ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50'
-                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
             ]"
           >
             {{ isLost ? t('status.lostShort') : t('status.active') }}
@@ -278,8 +278,8 @@ const deleteProduct = async () => {
       </Button>
     </div>
 
-    <form v-else @submit="onSubmit" class="grid gap-8 lg:grid-cols-3 items-start">
-      <div class="lg:col-span-2 space-y-8">
+    <form v-else @submit="onSubmit" class="grid gap-6 lg:grid-cols-3 items-start">
+      <div class="lg:col-span-2 min-w-0 space-y-6">
         <Card>
           <CardHeader>
             <CardTitle>{{ t('dashboard.basicInfo') }}</CardTitle>
@@ -443,27 +443,10 @@ const deleteProduct = async () => {
           </CardContent>
         </Card>
 
-        <div class="flex items-center justify-end gap-4 pt-4">
-          <Button type="button" variant="outline" @click="router.back()" :disabled="isSaving">
-            {{ t('action.cancel') }}
-          </Button>
-          <Button type="submit" :disabled="isSaving" class="min-w-[120px]">
-            <Loader2 v-if="isSaving" class="mr-2 h-4 w-4 animate-spin" />
-            {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
-          </Button>
-        </div>
+
       </div>
 
-      <div class="space-y-6">
-        <Card>
-          <CardHeader class="pb-3">
-            <CardTitle class="text-lg">QR 码定制</CardTitle>
-            <CardDescription>选择品类并自定义样式</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <QrCustomizer v-model="qrCustomization" :product-id="productId" />
-          </CardContent>
-        </Card>
+      <div class="min-w-0 space-y-6">
 
         <Card>
           <CardHeader class="pb-3">
@@ -539,6 +522,24 @@ const deleteProduct = async () => {
             </AlertDialog>
           </CardContent>
         </Card>
+      </div>
+      <Card class="min-w-0 lg:col-span-3">
+        <CardHeader class="pb-3">
+          <CardTitle class="text-lg">{{ t('customizer.title') }}</CardTitle>
+          <CardDescription>{{ t('customizer.subtitle') }}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <QrCustomizer v-model="qrCustomization" :product-id="productId" />
+        </CardContent>
+      </Card>
+      <div class="flex items-center justify-end gap-4 lg:col-span-3">
+        <Button type="button" variant="outline" :title="t('action.cancel')" @click="router.back()" :disabled="isSaving">
+          {{ t('action.cancel') }}
+        </Button>
+        <Button type="submit" :title="t('action.saveChanges')" :disabled="isSaving" class="min-w-[120px]">
+          <Loader2 v-if="isSaving" class="mr-2 h-4 w-4 animate-spin" />
+          {{ isSaving ? t('action.saving') : t('action.saveChanges') }}
+        </Button>
       </div>
     </form>
   </div>

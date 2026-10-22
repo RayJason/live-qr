@@ -3,6 +3,8 @@ import { computed, useId } from 'vue'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 
+const { t } = useI18n()
+
 const props = defineProps<{
   label: string
   modelValue: string
@@ -52,7 +54,7 @@ function updateOpacity(event: Event) {
       />
     </div>
     <div class="flex items-center gap-3">
-      <Label :for="`${id}-opacity`" class="shrink-0 text-xs text-muted-foreground">不透明度</Label>
+      <Label :for="`${id}-opacity`" class="shrink-0 text-xs text-muted-foreground">{{ t('customizer.opacity') }}</Label>
       <input
         :id="`${id}-opacity`"
         type="range"
@@ -60,7 +62,7 @@ function updateOpacity(event: Event) {
         max="100"
         step="1"
         :value="opacity"
-        :aria-label="`${label}不透明度`"
+        :aria-label="t('customizer.opacityLabel', { label })"
         :aria-valuetext="`${opacity}%`"
         class="min-w-0 flex-1 accent-primary"
         @input="updateOpacity"

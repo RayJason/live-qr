@@ -56,9 +56,9 @@ const handleGetStarted = () => {
         />
 
         <div
-          class="relative bg-white p-8 rounded-3xl shadow-2xl border border-gray-100 rotate-3 transition-transform hover:rotate-0 duration-500"
+          class="relative bg-white [color-scheme:light] p-8 rounded-3xl shadow-2xl border border-gray-100 rotate-3 transition-transform hover:rotate-0 duration-500"
         >
-          <QrCode class="w-64 h-64 text-primary stroke-[1.5]" />
+          <QrCode class="w-64 h-64 text-slate-900 stroke-[1.5]" />
         </div>
       </div>
     </section>

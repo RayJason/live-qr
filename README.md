@@ -305,3 +305,15 @@ The horizontal-capsule and vertical-capsule styles use the public `qr-code-styli
 | [Awesome-QR](https://github.com/SumiMakito/Awesome-qr.js) | Background image and animated GIF composition | An alternative for future image-based designs; unnecessary for the current shape and gradient controls. |
 | [EasyQRCodeJS](https://github.com/ushelp/EasyQRCodeJS) | Canvas/SVG output, logos, background images, titles and subtitles | Useful for composed labels; the existing renderer already covers the current customization requirements. |
 | [QRBTF](https://github.com/latentcat/qrbtf) | Artistic and parametric QR generation | A reference for a future artistic-code feature rather than a replacement for the current Vue component. |
+
+## Appearance and languages
+
+The header theme menu supports System (default), Light and Dark. Nuxt Color Mode applies the theme before rendering, follows system changes in System mode and remembers explicit choices in local storage. Tailwind dark variants use the same `dark` class as the shared CSS color tokens.
+
+`@nuxtjs/color-mode` is pinned to 3.5.2 for the current Nuxt 4.2.2 dependency set; upgrade it together with Nuxt rather than independently.
+
+QR previews and downloads retain their configured colors in both themes. Changing the website theme does not change the printed QR design.
+
+The product editor places QR customization below item settings as a full-width section, with preview and controls side by side on desktop and stacked on smaller screens. Save Changes is at the end of the form and saves both item settings and QR design.
+
+UI translations live in `i18n/translations/{en,zh,ja,ko}.json`. QR customization uses the `customizer` namespace and stable category, shape and preset identifiers. Add matching keys in all four languages when changing this UI.

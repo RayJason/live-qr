@@ -275,10 +275,10 @@ const onSubmit = form.handleSubmit(async (values) => {
           >
             <div
               v-if="product.lostMessage"
-              class="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center justify-center gap-2"
+              class="bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-900 rounded-xl p-6 flex flex-col items-center justify-center gap-2"
             >
               <Mail class="h-6 w-6 text-red-500 mb-1" />
-              <p class="text-center font-semibold text-lg text-red-900 leading-relaxed max-w-[90%]">
+              <p class="text-center font-semibold text-lg text-red-900 dark:text-red-200 leading-relaxed max-w-[90%]">
                 "{{ product.lostMessage }}"
               </p>
             </div>
@@ -394,7 +394,7 @@ const onSubmit = form.handleSubmit(async (values) => {
             v-if="reportSuccess"
             class="text-center py-4 animate-in zoom-in duration-300"
           >
-            <div class="bg-green-100 text-green-600 p-4 rounded-full inline-block mb-4 shadow-sm">
+            <div class="bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300 p-4 rounded-full inline-block mb-4 shadow-sm">
               <CheckCircle class="h-10 w-10" />
             </div>
             <h3 class="text-2xl font-bold text-foreground">{{ t('action.success') }}</h3>
