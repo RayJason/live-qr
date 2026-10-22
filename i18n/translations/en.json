@@ -52,7 +52,7 @@
   },
   "footer": {
     "designedBy": "Designed by RefactorX",
-    "copyright": "\u00a9 {year} Anti-Lost. Open Source Project."
+    "copyright": "© {year} Anti-Lost. Open Source Project."
   },
   "home": {
     "seo": {
@@ -231,5 +231,99 @@
     "phoneMax": "Phone number must be 20 characters or fewer",
     "invalidUrl": "Please enter a valid URL",
     "finderContactRequired": "Please enter your email or phone number"
+  },
+  "customizer": {
+    "title": "QR customization",
+    "subtitle": "Choose a category and customize the design",
+    "category": "Choose category",
+    "styles": "Style presets",
+    "styleHint": "Previews show shape differences. Switching presets keeps your colors.",
+    "dotsShape": "Dot shape",
+    "outer": "Corner frame",
+    "inner": "Corner center",
+    "fill": "Dot fill",
+    "solid": "Solid",
+    "linear": "Linear gradient",
+    "radial": "Radial gradient",
+    "gradientColor": "Gradient end color",
+    "rotation": "Gradient angle",
+    "dotsColor": "Dot color",
+    "cornerColor": "Corner color",
+    "backgroundColor": "Background color",
+    "opacity": "Opacity",
+    "opacityLabel": "{label} opacity",
+    "colorHint": "Use dark dots on a light background. Test transparency and gradients on the actual material before printing.",
+    "logo": "Center logo (optional)",
+    "uploadTitle": "Upload a PNG, JPG or WebP image up to 2 MB",
+    "reading": "Reading…",
+    "replaceLogo": "Replace logo",
+    "uploadLogo": "Upload logo",
+    "removeLogo": "Remove the center logo",
+    "clear": "Clear",
+    "signature": "Personal message",
+    "signaturePlaceholder": "e.g. Ray’s snowboard 🏂",
+    "signatureHint": "The message appears on the scan page. Downloads contain only the QR code.",
+    "resetTitle": "Restore this category’s default shapes, colors and fill",
+    "reset": "Reset category preset",
+    "saveHint": "Click Save Changes to keep your design for next time.",
+    "invalidColor": "Enter a valid hex color, such as #1a1a2e or #1a1a2eff",
+    "logoInvalid": "Choose a PNG, JPG or WebP image up to 2 MB",
+    "readError": "Could not read image",
+    "logoError": "Could not read this image. Choose another image.",
+    "renderError": "Could not generate the QR code. Check colors and logo, then retry.",
+    "notReady": "QR code is not ready",
+    "downloadError": "Download failed. Check the logo or try again.",
+    "copied": "Link copied",
+    "copyError": "Could not copy link. Try again.",
+    "pngTitle": "Download a 1200 × 1200 PNG image",
+    "svgTitle": "Download a scalable SVG image",
+    "png": "PNG image",
+    "svg": "SVG vector",
+    "copyTitle": "Copy this item’s scan link",
+    "copy": "Copy link",
+    "suggestedSize": "{category} · Suggested size {size}",
+    "downloaded": "{format} QR code downloaded",
+    "presetTitle": "{description}; keeps your colors",
+    "shapeTitle": "Use {shape} dots",
+    "qrLabel": "QR code",
+    "categories": {
+      "STICKER": "QR sticker",
+      "KEYCHAIN": "QR keychain",
+      "LUGGAGE_TAG": "Luggage tag",
+      "SNOWBOARD_STICKER": "Snowboard sticker",
+      "BOARDING_PASS": "Boarding pass tag"
+    },
+    "descriptions": {
+      "STICKER": "Waterproof, durable sticker for phones, laptops and cameras",
+      "KEYCHAIN": "Metal or acrylic keychain for keys and backpacks",
+      "LUGGAGE_TAG": "Large luggage tag with a name area for suitcases and backpacks",
+      "SNOWBOARD_STICKER": "Cold-resistant, waterproof sticker for snowboards and outdoor gear",
+      "BOARDING_PASS": "Boarding pass design for suitcase handles and passport holders"
+    },
+    "shapes": {
+      "square": "Square",
+      "dots": "Dots",
+      "rounded": "Rounded",
+      "extra-rounded": "Extra rounded",
+      "classy": "Leaf",
+      "classy-rounded": "Rounded leaf",
+      "dot": "Circle",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical"
+    },
+    "presetNames": {
+      "classic": "Classic",
+      "dots": "Dots",
+      "horizontal": "Horizontal",
+      "vertical": "Vertical",
+      "leaf": "Leaf"
+    },
+    "presetDescriptions": {
+      "classic": "Joined squares · square corners",
+      "dots": "Separate dots · circular corners",
+      "horizontal": "Horizontal capsules · rounded corners",
+      "vertical": "Vertical capsules · square corners",
+      "leaf": "Curved leaves · rounded corners"
+    }
   }
 }

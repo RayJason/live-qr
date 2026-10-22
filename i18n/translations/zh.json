@@ -52,7 +52,7 @@
   },
   "footer": {
     "designedBy": "由 RefactorX 设计",
-    "copyright": "\u00a9 {year} Anti-Lost. 开源项目。"
+    "copyright": "© {year} Anti-Lost. 开源项目。"
   },
   "home": {
     "seo": {
@@ -231,5 +231,99 @@
     "phoneMax": "电话号码不能超过 20 个字符",
     "invalidUrl": "请输入有效的 URL",
     "finderContactRequired": "请输入邮箱或电话号码"
+  },
+  "customizer": {
+    "title": "QR 码定制",
+    "subtitle": "选择品类并自定义样式",
+    "category": "选择品类",
+    "styles": "风格预设",
+    "styleHint": "黑白预览展示结构差异，切换预设保留当前配色。",
+    "dotsShape": "码点形状",
+    "outer": "定位角外框",
+    "inner": "定位角中心",
+    "fill": "码点填色",
+    "solid": "纯色",
+    "linear": "线性渐变",
+    "radial": "径向渐变",
+    "gradientColor": "渐变终点颜色",
+    "rotation": "渐变角度",
+    "dotsColor": "码点颜色",
+    "cornerColor": "定位角颜色",
+    "backgroundColor": "背景颜色",
+    "opacity": "不透明度",
+    "opacityLabel": "{label}不透明度",
+    "colorHint": "建议使用深色码点和浅色背景。透明色及渐变效果请在实际材质上试扫后再印刷。",
+    "logo": "中心 Logo（可选）",
+    "uploadTitle": "上传不超过 2 MB 的 PNG、JPG 或 WebP 图片",
+    "reading": "读取中…",
+    "replaceLogo": "更换 Logo",
+    "uploadLogo": "上传 Logo",
+    "removeLogo": "移除二维码中心 Logo",
+    "clear": "清除",
+    "signature": "个性签名",
+    "signaturePlaceholder": "如：Ray 的雪板 🏂",
+    "signatureHint": "签名显示在扫码页面，下载图片仅包含二维码。",
+    "resetTitle": "恢复当前品类的默认形状、颜色和填色",
+    "reset": "恢复品类预设",
+    "saveHint": "修改样式后，点击「保存更改」以便下次继续编辑。",
+    "invalidColor": "请输入有效的十六进制颜色，如 #1a1a2e 或 #1a1a2eff",
+    "logoInvalid": "请选择不超过 2 MB 的 PNG、JPG 或 WebP 图片",
+    "readError": "图片读取失败",
+    "logoError": "图片无法读取，请选择其他图片",
+    "renderError": "二维码生成失败，请检查颜色和 Logo 后重试",
+    "notReady": "二维码未就绪",
+    "downloadError": "二维码下载失败，请检查 Logo 或重试",
+    "copied": "链接已复制",
+    "copyError": "链接复制失败，请重试",
+    "pngTitle": "下载 1200 × 1200 像素 PNG 图片",
+    "svgTitle": "下载可无损缩放的 SVG 矢量图",
+    "png": "PNG 图片",
+    "svg": "SVG 矢量图",
+    "copyTitle": "复制物品的扫码链接",
+    "copy": "复制链接",
+    "suggestedSize": "{category} · 建议尺寸 {size}",
+    "downloaded": "{format} 二维码已下载",
+    "presetTitle": "{description}；保留当前配色",
+    "shapeTitle": "使用{shape}码点",
+    "qrLabel": "二维码",
+    "categories": {
+      "STICKER": "二维码贴纸",
+      "KEYCHAIN": "二维码钥匙扣",
+      "LUGGAGE_TAG": "行李牌",
+      "SNOWBOARD_STICKER": "滑雪板贴纸",
+      "BOARDING_PASS": "登机牌挂件"
+    },
+    "descriptions": {
+      "STICKER": "防水耐磨贴纸，适合贴在手机、电脑、相机等设备上",
+      "KEYCHAIN": "金属/亚克力钥匙扣，随身携带，适合钥匙、背包挂件",
+      "LUGGAGE_TAG": "大尺寸行李牌，带姓名填写区，适合行李箱、背包",
+      "SNOWBOARD_STICKER": "耐低温、防水防雪，适合滑雪板、雪具等户外装备",
+      "BOARDING_PASS": "登机牌风格设计，适合挂在行李箱把手、护照夹上"
+    },
+    "shapes": {
+      "square": "方形",
+      "dots": "圆点",
+      "rounded": "圆角",
+      "extra-rounded": "柔和圆角",
+      "classy": "叶片",
+      "classy-rounded": "圆角叶片",
+      "dot": "圆形",
+      "horizontal": "横纹",
+      "vertical": "竖纹"
+    },
+    "presetNames": {
+      "classic": "方格",
+      "dots": "圆点",
+      "horizontal": "横纹",
+      "vertical": "竖纹",
+      "leaf": "叶片"
+    },
+    "presetDescriptions": {
+      "classic": "连片方块 · 方形定位角",
+      "dots": "独立圆点 · 圆环定位角",
+      "horizontal": "横向胶囊 · 圆角定位角",
+      "vertical": "纵向胶囊 · 方形定位角",
+      "leaf": "弧形叶片 · 圆角定位角"
+    }
   }
 }

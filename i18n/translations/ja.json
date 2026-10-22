@@ -52,7 +52,7 @@
   },
   "footer": {
     "designedBy": "Designed by RefactorX",
-    "copyright": "\u00a9 {year} Anti-Lost. オープンソースプロジェクト。"
+    "copyright": "© {year} Anti-Lost. オープンソースプロジェクト。"
   },
   "home": {
     "seo": {
@@ -231,5 +231,99 @@
     "phoneMax": "電話番号は20文字以内で入力してください",
     "invalidUrl": "有効なURLを入力してください",
     "finderContactRequired": "メールアドレスまたは電話番号を入力してください"
+  },
+  "customizer": {
+    "title": "QR コードのカスタマイズ",
+    "subtitle": "種類を選んでデザインを編集",
+    "category": "種類を選択",
+    "styles": "スタイルプリセット",
+    "styleHint": "プレビューで形状を確認できます。配色は維持されます。",
+    "dotsShape": "ドットの形状",
+    "outer": "コーナーの枠",
+    "inner": "コーナーの中心",
+    "fill": "ドットの塗り",
+    "solid": "単色",
+    "linear": "線形グラデーション",
+    "radial": "放射状グラデーション",
+    "gradientColor": "グラデーションの終点色",
+    "rotation": "グラデーションの角度",
+    "dotsColor": "ドットの色",
+    "cornerColor": "コーナーの色",
+    "backgroundColor": "背景色",
+    "opacity": "不透明度",
+    "opacityLabel": "{label}の不透明度",
+    "colorHint": "濃いドットと明るい背景を推奨します。透明色やグラデーションは実際の素材で読み取りを確認してから印刷してください。",
+    "logo": "中央のロゴ（任意）",
+    "uploadTitle": "2 MB 以下の PNG、JPG、WebP 画像をアップロード",
+    "reading": "読み込み中…",
+    "replaceLogo": "ロゴを変更",
+    "uploadLogo": "ロゴをアップロード",
+    "removeLogo": "中央のロゴを削除",
+    "clear": "削除",
+    "signature": "メッセージ",
+    "signaturePlaceholder": "例：Ray のスノーボード 🏂",
+    "signatureHint": "メッセージはスキャン先のページに表示されます。画像には QR コードのみ含まれます。",
+    "resetTitle": "現在の種類の形状・配色・塗りを初期化",
+    "reset": "種類の初期設定に戻す",
+    "saveHint": "編集後は「変更を保存」を押してください。",
+    "invalidColor": "有効な HEX 色を入力してください（例：#1a1a2e、#1a1a2eff）",
+    "logoInvalid": "2 MB 以下の PNG、JPG、WebP 画像を選択してください",
+    "readError": "画像を読み込めません",
+    "logoError": "画像を読み込めません。別の画像を選択してください",
+    "renderError": "QR コードを生成できません。色とロゴを確認して再試行してください",
+    "notReady": "QR コードは準備中です",
+    "downloadError": "ダウンロードに失敗しました。ロゴを確認するか再試行してください",
+    "copied": "リンクをコピーしました",
+    "copyError": "リンクをコピーできません。再試行してください",
+    "pngTitle": "1200 × 1200 の PNG 画像をダウンロード",
+    "svgTitle": "拡大可能な SVG 画像をダウンロード",
+    "png": "PNG 画像",
+    "svg": "SVG ベクター",
+    "copyTitle": "このアイテムのスキャンリンクをコピー",
+    "copy": "リンクをコピー",
+    "suggestedSize": "{category} · 推奨サイズ {size}",
+    "downloaded": "{format} QR コードをダウンロードしました",
+    "presetTitle": "{description}（配色を維持）",
+    "shapeTitle": "{shape}のドットを使用",
+    "qrLabel": "QR コード",
+    "categories": {
+      "STICKER": "QR ステッカー",
+      "KEYCHAIN": "QR キーホルダー",
+      "LUGGAGE_TAG": "荷物タグ",
+      "SNOWBOARD_STICKER": "スノーボードステッカー",
+      "BOARDING_PASS": "搭乗券タグ"
+    },
+    "descriptions": {
+      "STICKER": "スマートフォンやパソコン、カメラ向けの防水・耐摩耗ステッカー",
+      "KEYCHAIN": "鍵やバックパック用の金属・アクリルキーホルダー",
+      "LUGGAGE_TAG": "スーツケースやバックパック向けの名前欄付き大型タグ",
+      "SNOWBOARD_STICKER": "スノーボードやアウトドア用品向けの耐寒・防水ステッカー",
+      "BOARDING_PASS": "スーツケースの持ち手やパスポートケース用の搭乗券風タグ"
+    },
+    "shapes": {
+      "square": "四角",
+      "dots": "ドット",
+      "rounded": "角丸",
+      "extra-rounded": "柔らかい角丸",
+      "classy": "リーフ",
+      "classy-rounded": "丸いリーフ",
+      "dot": "円",
+      "horizontal": "横縞",
+      "vertical": "縦縞"
+    },
+    "presetNames": {
+      "classic": "クラシック",
+      "dots": "ドット",
+      "horizontal": "横縞",
+      "vertical": "縦縞",
+      "leaf": "リーフ"
+    },
+    "presetDescriptions": {
+      "classic": "連続する四角・四角いコーナー",
+      "dots": "独立したドット・円形コーナー",
+      "horizontal": "横向きカプセル・角丸コーナー",
+      "vertical": "縦向きカプセル・四角いコーナー",
+      "leaf": "曲線のリーフ・角丸コーナー"
+    }
   }
 }

@@ -12,6 +12,8 @@ import QrStyleControls from './QrStyleControls.vue'
 import { qrPresets, type ProductTypeKey } from '@/lib/qr-presets'
 import { createQrOptions, defaultQrDesign, qrColorSchema, qrDesignSchema, type QrCustomization } from '@/lib/qr-design'
 
+const { t } = useI18n()
+
 const props = defineProps<{ productId?: string }>()
 const model = defineModel<QrCustomization>({ default: () => ({
   type: 'STICKER', dotsColor: '', cornerColor: '', backgroundColor: '', logoUrl: '', customText: '',
@@ -57,15 +59,15 @@ async function handleLogoUpload(event: Event) {
   if (!file) return
   logoError.value = ''
   if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-    logoError.value = '请选择不超过 2 MB 的 PNG、JPG 或 WebP 图片'
+    logoError.value = 'customizer.logoInvalid'
     return
   }
   uploading.value = true
   try {
     const dataUrl = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader()
-      reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error('图片读取失败'))
-      reader.onerror = () => reject(new Error('图片读取失败'))
+      reader.onload = () => typeof reader.result === 'string' ? resolve(reader.result) : reject(new Error(t('customizer.readError')))
+      reader.onerror = () => reject(new Error(t('customizer.readError')))
       reader.readAsDataURL(file)
     })
     const image = new Image()
@@ -73,7 +75,7 @@ async function handleLogoUpload(event: Event) {
     await image.decode()
     update({ logoUrl: dataUrl })
   } catch {
-    logoError.value = '图片无法读取，请选择其他图片'
+    logoError.value = 'customizer.logoError'
   } finally {
     uploading.value = false
   }
@@ -84,10 +86,10 @@ async function download(extension: 'png' | 'svg') {
   try {
     await nextTick()
     const success = await preview.value?.download(extension, `qr-${props.productId || 'preview'}`)
-    if (!success) throw new Error('二维码未就绪')
-    toast.success(`${extension.toUpperCase()} 二维码已下载`)
+    if (!success) throw new Error(t('customizer.notReady'))
+    toast.success(t('customizer.downloaded', { format: extension.toUpperCase() }))
   } catch {
-    toast.error('二维码下载失败，请检查 Logo 或重试')
+    toast.error(t('customizer.downloadError'))
   } finally {
     downloading.value = false
   }
@@ -96,9 +98,9 @@ async function download(extension: 'png' | 'svg') {
 async function copyLink() {
   try {
     await copy(qrData.value)
-    toast.success('链接已复制')
+    toast.success(t('customizer.copied'))
   } catch {
-    toast.error('链接复制失败，请重试')
+    toast.error(t('customizer.copyError'))
   }
 }
 
@@ -111,40 +113,40 @@ function setReady(value: boolean) {
 <template>
   <div class="qr-customizer min-w-0 grid items-start gap-6">
     <fieldset class="qr-categories min-w-0 space-y-2 lg:col-span-2">
-      <legend class="text-sm font-medium">选择品类</legend>
+      <legend class="text-sm font-medium">{{ t('customizer.category') }}</legend>
       <div class="grid grid-cols-[repeat(auto-fit,minmax(min(100%,7rem),1fr))] gap-2">
         <button v-for="(item, key) in qrPresets" :key="key" type="button"
-          :title="item.label" :aria-pressed="customization.type === key"
+          :title="t(`customizer.categories.${key}`)" :aria-pressed="customization.type === key"
           class="flex min-w-0 flex-col items-center gap-1 rounded-xl border-2 p-3 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           :class="customization.type === key ? 'border-primary bg-primary/5' : 'border-muted hover:border-primary/30 hover:bg-muted/30'"
           @click="selectType(key)">
           <span class="text-2xl" aria-hidden="true">{{ item.icon }}</span>
-          <span class="text-center text-xs font-semibold leading-tight">{{ item.label }}</span>
+          <span class="text-center text-xs font-semibold leading-tight">{{ t(`customizer.categories.${key}`) }}</span>
         </button>
       </div>
-      <p class="text-xs text-muted-foreground">{{ preset.description }}</p>
+      <p class="text-xs text-muted-foreground">{{ t(`customizer.descriptions.${customization.type}`) }}</p>
     </fieldset>
 
     <div class="qr-preview min-w-0 space-y-3 rounded-xl border bg-muted/30 p-4">
       <div class="mx-auto w-full max-w-[320px] overflow-hidden rounded-lg bg-white">
         <AdvancedQrCode v-if="validDesign" ref="preview" :data="qrData" :options="options" :pattern="customization.design.pattern"
-          @ready="setReady" @error="renderError = $event" />
-        <p v-else class="p-6 text-center text-sm text-destructive" role="alert">请输入有效的十六进制颜色，如 #1a1a2e 或 #1a1a2eff</p>
+          @ready="setReady" @error="renderError = 'customizer.renderError'" />
+        <p v-else class="p-6 text-center text-sm text-destructive" role="alert">{{ t('customizer.invalidColor') }}</p>
       </div>
-      <p v-if="renderError" class="text-xs text-destructive" role="alert">{{ renderError }}</p>
-      <p class="text-center text-xs text-muted-foreground">{{ preset.label }} · 建议尺寸 {{ preset.suggestedSize }}</p>
+      <p v-if="renderError" class="text-xs text-destructive" role="alert">{{ t(renderError) }}</p>
+      <p class="text-center text-xs text-muted-foreground">{{ t('customizer.suggestedSize', { category: t(`customizer.categories.${customization.type}`), size: preset.suggestedSize }) }}</p>
       <div class="grid grid-cols-2 gap-2">
-        <Button type="button" variant="outline" size="sm" title="下载 1200 × 1200 像素 PNG 图片"
+        <Button type="button" variant="outline" size="sm" :title="t('customizer.pngTitle')"
           :disabled="!ready || !validDesign || downloading || uploading" @click="download('png')">
-          <Download class="mr-1 h-3.5 w-3.5" />PNG 图片
+          <Download class="mr-1 h-3.5 w-3.5" />{{ t('customizer.png') }}
         </Button>
-        <Button type="button" variant="outline" size="sm" title="下载可无损缩放的 SVG 矢量图"
+        <Button type="button" variant="outline" size="sm" :title="t('customizer.svgTitle')"
           :disabled="!ready || !validDesign || downloading || uploading" @click="download('svg')">
-          <Download class="mr-1 h-3.5 w-3.5" />SVG 矢量图
+          <Download class="mr-1 h-3.5 w-3.5" />{{ t('customizer.svg') }}
         </Button>
       </div>
-      <Button v-if="productId" type="button" variant="ghost" size="sm" class="w-full" title="复制物品的扫码链接" @click="copyLink">
-        <Copy class="mr-1 h-3.5 w-3.5" />复制链接
+      <Button v-if="productId" type="button" variant="ghost" size="sm" class="w-full" :title="t('customizer.copyTitle')" @click="copyLink">
+        <Copy class="mr-1 h-3.5 w-3.5" />{{ t('customizer.copy') }}
       </Button>
     </div>
 
@@ -152,36 +154,36 @@ function setReady(value: boolean) {
     <QrStyleControls :model-value="customization" @update:model-value="update" />
 
     <div class="space-y-4 border-t pt-5">
-      <QrColorInput :model-value="customization.dotsColor" label="码点颜色" @update:model-value="update({ dotsColor: $event })" />
-      <QrColorInput :model-value="customization.cornerColor" label="定位角颜色" @update:model-value="update({ cornerColor: $event })" />
-      <QrColorInput :model-value="customization.backgroundColor" label="背景颜色" @update:model-value="update({ backgroundColor: $event })" />
-      <p class="text-xs leading-relaxed text-muted-foreground">建议使用深色码点和浅色背景。透明色及渐变效果请在实际材质上试扫后再印刷。</p>
+      <QrColorInput :model-value="customization.dotsColor" :label="t('customizer.dotsColor')" @update:model-value="update({ dotsColor: $event })" />
+      <QrColorInput :model-value="customization.cornerColor" :label="t('customizer.cornerColor')" @update:model-value="update({ cornerColor: $event })" />
+      <QrColorInput :model-value="customization.backgroundColor" :label="t('customizer.backgroundColor')" @update:model-value="update({ backgroundColor: $event })" />
+      <p class="text-xs leading-relaxed text-muted-foreground">{{ t('customizer.colorHint') }}</p>
     </div>
 
     <div class="space-y-2 border-t pt-5">
-      <Label :for="`${id}-logo`" class="text-xs">中心 Logo（可选）</Label>
+      <Label :for="`${id}-logo`" class="text-xs">{{ t('customizer.logo') }}</Label>
       <input :id="`${id}-logo`" ref="logoInput" type="file" accept="image/png,image/jpeg,image/webp" class="hidden" @change="handleLogoUpload" />
       <div class="flex flex-wrap gap-2">
-        <Button type="button" variant="outline" size="sm" title="上传不超过 2 MB 的 PNG、JPG 或 WebP 图片"
+        <Button type="button" variant="outline" size="sm" :title="t('customizer.uploadTitle')"
           :disabled="uploading" @click="logoInput?.click()">
-          <Upload class="mr-1 h-3.5 w-3.5" />{{ uploading ? '读取中…' : customization.logoUrl ? '更换 Logo' : '上传 Logo' }}
+          <Upload class="mr-1 h-3.5 w-3.5" />{{ uploading ? t('customizer.reading') : customization.logoUrl ? t('customizer.replaceLogo') : t('customizer.uploadLogo') }}
         </Button>
-        <Button v-if="customization.logoUrl" type="button" variant="ghost" size="sm" title="移除二维码中心 Logo"
-          :disabled="uploading" @click="update({ logoUrl: '' }); logoError = ''">清除</Button>
+        <Button v-if="customization.logoUrl" type="button" variant="ghost" size="sm" :title="t('customizer.removeLogo')"
+          :disabled="uploading" @click="update({ logoUrl: '' }); logoError = ''">{{ t('customizer.clear') }}</Button>
       </div>
-      <p v-if="logoError" class="text-xs text-destructive" role="alert">{{ logoError }}</p>
+      <p v-if="logoError" class="text-xs text-destructive" role="alert">{{ t(logoError) }}</p>
     </div>
 
     <div class="space-y-2">
-      <Label :for="`${id}-text`" class="text-xs">个性签名</Label>
-      <Input :id="`${id}-text`" :model-value="customization.customText" placeholder="如：Ray 的雪板 🏂" class="h-9 text-sm"
+      <Label :for="`${id}-text`" class="text-xs">{{ t('customizer.signature') }}</Label>
+      <Input :id="`${id}-text`" :model-value="customization.customText" :placeholder="t('customizer.signaturePlaceholder')" class="h-9 text-sm"
         @update:model-value="update({ customText: String($event) })" />
-      <p class="text-xs text-muted-foreground">签名显示在扫码页面，下载图片仅包含二维码。</p>
+      <p class="text-xs text-muted-foreground">{{ t('customizer.signatureHint') }}</p>
     </div>
-    <Button type="button" variant="ghost" size="sm" title="恢复当前品类的默认形状、颜色和填色" @click="selectType(customization.type)">
-      <RefreshCw class="mr-1 h-3.5 w-3.5" />恢复品类预设
+    <Button type="button" variant="ghost" size="sm" :title="t('customizer.resetTitle')" @click="selectType(customization.type)">
+      <RefreshCw class="mr-1 h-3.5 w-3.5" />{{ t('customizer.reset') }}
     </Button>
-    <p class="text-xs text-muted-foreground">修改样式后，点击「保存更改」以便下次继续编辑。</p>
+    <p class="text-xs text-muted-foreground">{{ t('customizer.saveHint') }}</p>
     </div>
   </div>
 </template>

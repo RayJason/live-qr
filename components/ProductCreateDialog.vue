@@ -127,11 +127,12 @@ const onSubmit = form.handleSubmit(async (values) => {
         <div class="grid gap-4 py-4">
           <!-- Type Selector -->
           <div>
-            <Label class="text-sm font-medium mb-2 block">品类</Label>
+            <Label class="text-sm font-medium mb-2 block">{{ t('customizer.category') }}</Label>
             <div class="grid grid-cols-3 gap-2">
               <button
                 v-for="(preset, key) in qrPresets"
                 :key="key"
+                :title="t(`customizer.categories.${key}`)"
                 type="button"
                 class="flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all"
                 :class="selectedType === key
@@ -140,7 +141,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                 @click="selectType(key as ProductTypeKey)"
               >
                 <span class="text-lg">{{ preset.icon }}</span>
-                <span class="text-[10px] font-medium leading-tight text-center">{{ preset.label }}</span>
+                <span class="text-[10px] font-medium leading-tight text-center">{{ t(`customizer.categories.${key}`) }}</span>
               </button>
             </div>
           </div>

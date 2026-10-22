@@ -525,8 +525,8 @@ const deleteProduct = async () => {
       </div>
         <Card class="min-w-0 lg:col-span-3">
           <CardHeader class="pb-3">
-            <CardTitle class="text-lg">QR 码定制</CardTitle>
-            <CardDescription>选择品类并自定义样式</CardDescription>
+            <CardTitle class="text-lg">{{ t('customizer.title') }}</CardTitle>
+            <CardDescription>{{ t('customizer.subtitle') }}</CardDescription>
           </CardHeader>
           <CardContent>
             <QrCustomizer v-model="qrCustomization" :product-id="productId" />
