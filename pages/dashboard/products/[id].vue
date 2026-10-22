@@ -218,10 +218,10 @@ const deleteProduct = async () => {
           <div
             v-if="product"
             :class="[
-              'px-2.5 py-0.5 rounded-full text-xs font-semibold uppercase tracking-wide border',
+              'px-2.5 py-0.5 shrink-0 rounded-full text-xs font-semibold uppercase tracking-wide border',
               isLost
                 ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/20 dark:text-red-400 dark:border-red-900/50'
-                : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-900/50'
+                : 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950 dark:text-emerald-300 dark:border-emerald-800'
             ]"
           >
             {{ isLost ? t('status.lostShort') : t('status.active') }}
