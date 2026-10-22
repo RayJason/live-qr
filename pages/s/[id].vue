@@ -204,7 +204,7 @@ const onSubmit = form.handleSubmit(async (values) => {
 
         <CardContent class="pt-8 pb-8 px-6 space-y-4">
           <div v-if="product.description" class="text-center">
-            <p class="text-muted-foreground text-lg leading-relaxed">
+            <p class="text-muted-foreground text-lg leading-relaxed whitespace-pre-line break-words">
               {{ product.description }}
             </p>
           </div>
@@ -225,7 +225,7 @@ const onSubmit = form.handleSubmit(async (values) => {
             </div>
 
             <div
-              v-if="product.showContactWhenSafe && (product.contactEmail || product.contactPhone)"
+              v-if="(product.showContactWhenSafe || showReportForm) && (product.contactEmail || product.contactPhone)"
               class="space-y-4 pt-2 animate-in fade-in"
             >
               <div class="relative">
@@ -247,7 +247,10 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <div class="bg-primary/10 p-2 rounded-full text-primary">
                   <Phone class="h-4 w-4" />
                 </div>
-                <span class="text-base font-semibold">{{ product.contactPhone }}</span>
+                <span class="min-w-0 flex flex-col">
+                  <span class="text-base font-semibold">{{ t('action.callOwner') }}</span>
+                  <span class="text-sm text-muted-foreground break-all">{{ product.contactPhone }}</span>
+                </span>
               </a>
 
               <a
@@ -258,7 +261,10 @@ const onSubmit = form.handleSubmit(async (values) => {
                 <div class="bg-primary/10 p-2 rounded-full text-primary">
                   <Mail class="h-4 w-4" />
                 </div>
-                <span class="text-base font-semibold">{{ product.contactEmail }}</span>
+                <span class="min-w-0 flex flex-col">
+                  <span class="text-base font-semibold">{{ t('action.emailOwner') }}</span>
+                  <span class="text-sm text-muted-foreground break-all">{{ product.contactEmail }}</span>
+                </span>
               </a>
             </div>
           </div>
@@ -284,9 +290,12 @@ const onSubmit = form.handleSubmit(async (values) => {
                 class="group relative flex items-center justify-center gap-3 w-full p-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
               >
                 <div class="bg-white/20 p-2 rounded-full">
-                  <Phone class="h-6 w-6" />
+                  <Phone class="h-6 w-6 shrink-0" />
                 </div>
-                <span class="text-xl font-bold tracking-wide">{{ t('action.callOwner') }}</span>
+                <span class="min-w-0 flex flex-col items-center gap-1">
+                  <span class="text-xl font-bold tracking-wide">{{ t('action.callOwner') }}</span>
+                  <span class="text-sm text-gray-200 break-all">{{ product.contactPhone }}</span>
+                </span>
               </a>
 
               <a
@@ -295,9 +304,12 @@ const onSubmit = form.handleSubmit(async (values) => {
                 class="group relative flex items-center justify-center gap-3 w-full p-4 rounded-xl bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-lg hover:shadow-xl hover:scale-[1.02] transition-all duration-300"
               >
                 <div class="bg-white/20 p-2 rounded-full">
-                  <Mail class="h-6 w-6" />
+                  <Mail class="h-6 w-6 shrink-0" />
                 </div>
-                <span class="text-xl font-bold tracking-wide">{{ t('action.emailOwner') }}</span>
+                <span class="min-w-0 flex flex-col items-center gap-1">
+                  <span class="text-xl font-bold tracking-wide">{{ t('action.emailOwner') }}</span>
+                  <span class="text-sm text-gray-200 break-all">{{ product.contactEmail }}</span>
+                </span>
               </a>
             </div>
           </div>
@@ -311,6 +323,7 @@ const onSubmit = form.handleSubmit(async (values) => {
                   ? 'bg-white text-red-600 hover:bg-slate-50 border-2 border-red-100'
                   : 'bg-primary text-primary-foreground hover:bg-primary/90'
               "
+              :title="t('action.sendMessage')"
               :variant="isLost ? 'secondary' : 'default'"
               @click="showReportForm = true"
             >

@@ -70,9 +70,11 @@ Anti-Lost addresses that by giving each item a permanent public URL at `/s/:id`.
 ### Public Item Page
 
 - Accessible without authentication.
-- Shows item name, description, and owner name.
+- Shows item name, description (preserving line breaks), and owner name.
 - Only exposes a limited subset of fields.
-- Supports direct contact actions such as phone and email when enabled.
+- Shows configured phone and email details beneath their contact action labels.
+- In normal mode, contact actions appear when `showContactWhenSafe` is enabled or the finder opens the report form; in lost mode, they appear immediately.
+- Simplified Chinese status labels are “物品挂失” for `LOST` and “已认证” for `NORMAL`; this is display wording and does not add a verification process.
 - Includes a report form so a finder can leave contact information and a message.
 
 ## Privacy Model

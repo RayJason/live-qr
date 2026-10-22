@@ -1,8 +1,8 @@
 {
   "status": {
-    "lost": "物品丢失",
+    "lost": "物品挂失",
     "lostShort": "丢失",
-    "safe": "物品安全",
+    "safe": "已认证",
     "active": "正常",
     "lostModeOn": "已开启丢失模式",
     "normalMode": "正常模式"
