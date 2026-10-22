@@ -18,6 +18,7 @@ Anti-Lost addresses that by giving each item a permanent public URL at `/s/:id`.
 - Sign in with Google and create a personal dashboard.
 - Register multiple items and assign each one a persistent public QR page.
 - Generate styled QR codes and download them as images for printing.
+- Set dot, corner, and background colors with independent 0–100% opacity in the QR customizer. Opacity is saved in the existing color fields as eight-digit hex (`#RRGGBBAA`); six-digit colors remain fully opaque.
 - Switch an item between `NORMAL` and `LOST` status without changing the QR code URL.
 - Show or hide owner contact details depending on the item state.
 - Add a custom lost message for the public recovery page.

@@ -5,6 +5,7 @@ import type { Options, DotType, CornerSquareType, CornerDotType } from 'qr-code-
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import QrColorInput from './QrColorInput.vue'
 import {
   qrPresets,
   productTypeLabels,
@@ -202,44 +203,9 @@ onMounted(() => {
         </div>
 
         <!-- Colors -->
-        <div class="space-y-2">
-          <Label class="text-xs">码点颜色</Label>
-          <div class="flex gap-2 items-center">
-            <input
-              v-model="dotsColor"
-              type="color"
-              class="w-9 h-9 rounded-lg border cursor-pointer"
-              @change="emitUpdate"
-            />
-            <Input v-model="dotsColor" class="h-9 text-sm font-mono" @update:model-value="emitUpdate" />
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <Label class="text-xs">定位角颜色</Label>
-          <div class="flex gap-2 items-center">
-            <input
-              v-model="cornerColor"
-              type="color"
-              class="w-9 h-9 rounded-lg border cursor-pointer"
-              @change="emitUpdate"
-            />
-            <Input v-model="cornerColor" class="h-9 text-sm font-mono" @update:model-value="emitUpdate" />
-          </div>
-        </div>
-
-        <div class="space-y-2">
-          <Label class="text-xs">背景颜色</Label>
-          <div class="flex gap-2 items-center">
-            <input
-              v-model="backgroundColor"
-              type="color"
-              class="w-9 h-9 rounded-lg border cursor-pointer"
-              @change="emitUpdate"
-            />
-            <Input v-model="backgroundColor" class="h-9 text-sm font-mono" @update:model-value="emitUpdate" />
-          </div>
-        </div>
+        <QrColorInput v-model="dotsColor" label="码点颜色" @update:model-value="emitUpdate" />
+        <QrColorInput v-model="cornerColor" label="定位角颜色" @update:model-value="emitUpdate" />
+        <QrColorInput v-model="backgroundColor" label="背景颜色" @update:model-value="emitUpdate" />
 
         <!-- Logo -->
         <div class="space-y-2">
