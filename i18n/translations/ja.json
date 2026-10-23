@@ -94,6 +94,11 @@
     }
   },
   "dashboard": {
+    "deleteReport": "レポートを削除",
+    "deleteReportTitle": "このレポートを削除しますか？",
+    "deleteReportDescription": "この発見レポートは完全に削除されます。この操作は取り消せません。",
+    "deleteReportSuccess": "レポートを削除しました",
+    "deleteReportError": "レポートの削除に失敗しました",
     "pageTitle": "ダッシュボード",
     "welcomeBack": "おかえりなさい、{name}さん",
     "loadingErrorTitle": "エラー",

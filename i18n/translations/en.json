@@ -94,6 +94,11 @@
     }
   },
   "dashboard": {
+    "deleteReport": "Delete report",
+    "deleteReportTitle": "Delete this report?",
+    "deleteReportDescription": "This will permanently delete this finder report. This action cannot be undone.",
+    "deleteReportSuccess": "Report deleted",
+    "deleteReportError": "Failed to delete report",
     "pageTitle": "Dashboard",
     "welcomeBack": "Welcome back, {name}",
     "loadingErrorTitle": "Error",
