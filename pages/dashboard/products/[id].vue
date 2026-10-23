@@ -62,6 +62,7 @@ const {
   error,
 } = useFetch(`/api/products/${productId}`, {
   key: `product-${productId}`,
+  deep: true,
 });
 
 useSeoMeta({
