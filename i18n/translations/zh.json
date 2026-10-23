@@ -94,6 +94,11 @@
     }
   },
   "dashboard": {
+    "deleteReport": "删除报告",
+    "deleteReportTitle": "删除这条报告？",
+    "deleteReportDescription": "这将永久删除这条拾获报告，此操作无法撤销。",
+    "deleteReportSuccess": "报告已删除",
+    "deleteReportError": "删除报告失败",
     "pageTitle": "控制台",
     "welcomeBack": "欢迎回来，{name}",
     "loadingErrorTitle": "加载失败",

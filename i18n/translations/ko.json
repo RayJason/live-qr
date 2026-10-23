@@ -94,6 +94,11 @@
     }
   },
   "dashboard": {
+    "deleteReport": "신고 삭제",
+    "deleteReportTitle": "이 신고를 삭제하시겠습니까?",
+    "deleteReportDescription": "이 습득 신고가 영구적으로 삭제됩니다. 이 작업은 취소할 수 없습니다.",
+    "deleteReportSuccess": "신고가 삭제되었습니다",
+    "deleteReportError": "신고를 삭제하지 못했습니다",
     "pageTitle": "대시보드",
     "welcomeBack": "다시 오신 것을 환영합니다, {name}",
     "loadingErrorTitle": "오류",

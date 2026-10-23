@@ -32,6 +32,7 @@ import {
 } from "lucide-vue-next";
 import { Skeleton } from "@/components/ui/skeleton";
 import QrCustomizer from '@/components/dashboard/QrCustomizer.vue'
+import RecentReports from '@/components/dashboard/RecentReports.vue'
 import { defaultQrDesign, qrColorSchema, qrDesignSchema, resolveQrDesign, type QrCustomization } from '@/lib/qr-design'
 import {
   AlertDialog,
@@ -49,7 +50,7 @@ definePageMeta({
   middleware: "auth",
 });
 
-const { t, locale } = useI18n();
+const { t } = useI18n();
 const route = useRoute();
 const router = useRouter();
 const productId = route.params.id as string;
@@ -186,6 +187,12 @@ const onSubmit = form.handleSubmit(async (values) => {
     isSaving.value = false;
   }
 });
+
+const removeReport = (reportId: string) => {
+  if (product.value) {
+    product.value.reports = product.value.reports.filter(report => report.id !== reportId)
+  }
+}
 
 const deleteProduct = async () => {
   try {
@@ -448,42 +455,11 @@ const deleteProduct = async () => {
 
       <div class="min-w-0 space-y-6">
 
-        <Card>
-          <CardHeader class="pb-3">
-            <CardTitle class="text-lg">{{ t('dashboard.recentReports') }}</CardTitle>
-          </CardHeader>
-          <CardContent class="px-2">
-            <div v-if="product?.reports && product.reports.length > 0" class="space-y-1">
-              <div
-                v-for="report in product.reports"
-                :key="report.id"
-                class="p-3 rounded-lg hover:bg-muted/50 transition-colors text-sm"
-              >
-                <div class="flex justify-between items-start mb-1 gap-3">
-                  <span class="font-medium truncate max-w-[120px]">
-                    {{ report.finderContact || t('report.anonymous') }}
-                  </span>
-                  <span class="text-xs text-muted-foreground whitespace-nowrap">
-                    {{ new Date(report.createdAt).toLocaleDateString(locale) }}
-                  </span>
-                </div>
-                <p class="text-muted-foreground line-clamp-2 text-xs leading-relaxed">
-                  {{ report.message }}
-                </p>
-              </div>
-            </div>
-            <div
-              v-else
-              class="flex flex-col items-center justify-center py-8 text-center text-muted-foreground"
-            >
-              <div class="h-10 w-10 rounded-full bg-muted/50 flex items-center justify-center mb-3">
-                <span class="text-xl">📭</span>
-              </div>
-              <p class="text-sm font-medium">{{ t('dashboard.noReports') }}</p>
-              <p class="text-xs opacity-70 mt-1">{{ t('dashboard.noReportsDesc') }}</p>
-            </div>
-          </CardContent>
-        </Card>
+        <RecentReports
+          :reports="product?.reports ?? []"
+          :product-id="productId"
+          @deleted="removeReport"
+        />
 
         <Card class="border-destructive/30 shadow-none">
           <CardHeader class="pb-3">

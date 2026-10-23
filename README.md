@@ -67,7 +67,7 @@ Anti-Lost addresses that by giving each item a permanent public URL at `/s/:id`.
 - Edit item metadata such as name and description.
 - Toggle between safe and lost states.
 - Configure contact email, phone number, lost message, and Feishu webhook URL.
-- Review recent finder reports.
+- Review recent finder reports and permanently delete individual reports after confirmation.
 - Delete items that are no longer needed.
 
 ### Public Item Page
